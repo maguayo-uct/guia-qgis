@@ -1,0 +1,3375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía QGIS — Introducción a capas y atributos</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --uct-green:       #1a5276;
+    --uct-green-mid:   #2471a3;
+    --uct-green-light: #d6eaf8;
+    --uct-green-soft:  #85c1e9;
+    --uct-green-dark:  #0d3349;
+    --uct-accent:      #1f6fa3;
+    --sidebar-w:       260px;
+    --body-max:        820px;
+    --serif:           'Source Serif 4', Georgia, serif;
+    --sans:            'Inter', system-ui, sans-serif;
+    --mono:            'JetBrains Mono', 'Courier New', monospace;
+    --radius:          6px;
+    --text-dark:       #0d1e2e;
+    --text-muted:      #4a5e70;
+    --border:          #b8d4e8;
+    --bg-page:         #f4f8fc;
+    --bg-white:        #ffffff;
+    --shadow:          0 1px 4px rgba(0,0,0,.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--serif);
+    font-size: 16.5px;
+    line-height: 1.8;
+    color: var(--text-dark);
+    background: var(--bg-page);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--uct-green-dark);
+    color: #cde4f5;
+    padding: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-logo {
+    background: var(--uct-green);
+    padding: 1.4rem 1.2rem 1rem;
+    border-bottom: 2px solid var(--uct-green-mid);
+  }
+  .sidebar-logo .lab-tag {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--uct-green-soft);
+    margin-bottom: .25rem;
+  }
+  .sidebar-logo h2 {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.35;
+  }
+  .sidebar-logo .course-tag {
+    font-size: 11px;
+    color: #a3c8e8;
+    margin-top: .3rem;
+  }
+  .toc-title {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #6aaed6;
+    padding: 1rem 1.2rem .4rem;
+  }
+  #sidebar nav a {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: .42rem 1.2rem;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: #90c4e0;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+    line-height: 1.4;
+  }
+  #sidebar nav a:hover, #sidebar nav a.active {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+  }
+  #sidebar nav a .num {
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--uct-green-soft);
+    margin-top: 2px;
+  }
+  .toc-chapter {
+    font-family: var(--sans);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--uct-green-soft);
+    padding: .9rem 1.2rem .3rem;
+    border-top: 1px solid rgba(255,255,255,.07);
+    margin-top: .3rem;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 1rem 1.2rem;
+    font-family: var(--sans);
+    font-size: 10.5px;
+    color: #3d6e8a;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 0 2.5rem 4rem;
+    max-width: calc(var(--sidebar-w) + var(--body-max));
+    width: 100%;
+  }
+
+  /* ── HEADER BANNER ── */
+  #doc-header {
+    background: linear-gradient(135deg, var(--uct-green) 0%, var(--uct-green-mid) 100%);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+    margin: 0 -2.5rem 2.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+  #doc-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+  }
+  .header-meta {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--uct-green-soft);
+    margin-bottom: .6rem;
+  }
+  #doc-header h1 {
+    font-family: var(--serif);
+    font-size: 1.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: .7rem;
+  }
+  .header-subtitle {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: rgba(255,255,255,.8);
+    line-height: 1.5;
+  }
+  .header-badges {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: 1.1rem;
+  }
+  .badge {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    background: rgba(255,255,255,.15);
+    color: #e8f5e8;
+    border: 1px solid rgba(255,255,255,.25);
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--uct-green-dark);
+    margin: 2.5rem 0 .8rem;
+    padding-bottom: .45rem;
+    border-bottom: 2px solid var(--uct-green-soft);
+    scroll-margin-top: 1.5rem;
+  }
+  h3.sub-title {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--uct-green);
+    margin: 1.6rem 0 .5rem;
+    scroll-margin-top: 1.5rem;
+  }
+  p { margin-bottom: 1rem; }
+  code {
+    font-family: var(--mono);
+    font-size: .82em;
+    background: #e8f0e8;
+    color: var(--uct-green-dark);
+    padding: .1em .38em;
+    border-radius: 3px;
+    border: 1px solid #ccdacc;
+  }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 4px solid;
+    padding: .85rem 1.1rem;
+    margin: 1.4rem 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-family: var(--sans);
+    font-size: .92rem;
+    line-height: 1.6;
+  }
+  .callout-icon {
+    font-size: 1rem;
+    margin-right: .4rem;
+  }
+  .callout-title {
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .callout.info  { border-color: var(--uct-green); background: var(--uct-green-light); color: var(--uct-green-dark); }
+  .callout.tip   { border-color: #1a7a9a; background: #e0f4fb; color: #0d3a4a; }
+  .callout.warn  { border-color: #c07c00; background: #fff8e8; color: #5a3c00; }
+  .callout.note  { border-color: #2471a3; background: #d6eaf8; color: #0d3349; }
+
+  /* ── STEP BOXES ── */
+  .steps-container { margin: 1.2rem 0 1.8rem; }
+  .step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+    position: relative;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 18px; top: 40px;
+    width: 2px;
+    height: calc(100% + 1.1rem - 40px);
+    background: var(--uct-green-soft);
+  }
+  .step:last-child::before { display: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--uct-green);
+    color: #fff;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(26,82,118,.35);
+    position: relative;
+    z-index: 1;
+  }
+  .step-body {
+    flex: 1;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .85rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .step-body strong {
+    font-family: var(--sans);
+    font-size: .95rem;
+    color: var(--uct-green-dark);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .step-body p {
+    font-family: var(--sans);
+    font-size: .9rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .step-path {
+    font-family: var(--mono);
+    font-size: .82rem;
+    color: var(--uct-green);
+    background: var(--uct-green-light);
+    border: 1px solid var(--uct-green-soft);
+    padding: .15em .5em;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: .3rem;
+  }
+
+  /* ── GIF PANEL ── */
+  .gif-panel {
+    background: var(--bg-white);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+    box-shadow: var(--shadow);
+  }
+  .gif-header {
+    background: var(--uct-green);
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    padding: .5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    letter-spacing: .04em;
+  }
+  .gif-header .dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.4); }
+  .gif-body {
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .8rem;
+  }
+  .gif-caption {
+    font-family: var(--sans);
+    font-size: .82rem;
+    color: var(--text-muted);
+    text-align: center;
+    font-style: italic;
+  }
+  .ruta-code {
+    font-family: var(--mono);
+    font-size: .82rem;
+    background: #0d1f2d;
+    color: #7dd3fc;
+    padding: .7rem 1rem;
+    border-radius: 6px;
+    display: block;
+    margin: .6rem 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    border: 1px solid #1a3a55;
+  }
+  .ruta-code .comment { color: #4a9ab5; }
+  .ruta-code .attr    { color: #88ccff; }
+  .ruta-code .val     { color: #ffcc88; }
+
+  /* ── KEYBOARD SHORTCUT ── */
+  kbd {
+    font-family: var(--mono);
+    font-size: .78rem;
+    background: #f0f0f0;
+    border: 1px solid #bbb;
+    border-bottom: 2px solid #999;
+    border-radius: 4px;
+    padding: .1em .45em;
+    color: #333;
+  }
+
+  /* ── TABLE ── */
+  table.formats {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: .88rem;
+    margin: 1rem 0 1.5rem;
+  }
+  table.formats th {
+    background: var(--uct-green);
+    color: #fff;
+    text-align: left;
+    padding: .55rem .85rem;
+    font-weight: 600;
+  }
+  table.formats td {
+    padding: .5rem .85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.formats tr:last-child td { border-bottom: none; }
+  table.formats tr:nth-child(even) td { background: var(--uct-green-light); }
+  table.formats .ext {
+    font-family: var(--mono);
+    color: var(--uct-green);
+    font-size: .82em;
+  }
+
+  /* ── DIVIDER ── */
+  hr.section-sep {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── OBJETIVOS BOX ── */
+  .objetivos-box {
+    border: 1.5px solid var(--uct-green-soft);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    background: var(--uct-green-light);
+    margin: 1.5rem 0;
+  }
+  .objetivos-box h3 {
+    font-family: var(--sans);
+    font-size: .88rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--uct-green);
+    margin-bottom: .7rem;
+  }
+  .objetivos-box ul {
+    list-style: none;
+    padding: 0;
+    font-family: var(--sans);
+    font-size: .9rem;
+    color: var(--uct-green-dark);
+  }
+  .objetivos-box ul li {
+    padding: .2rem 0 .2rem 1.4rem;
+    position: relative;
+  }
+  .objetivos-box ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--uct-accent);
+    font-weight: 700;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 820px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; padding: 0 1.2rem 3rem; }
+    #doc-header { margin: 0 -1.2rem 2rem; padding: 2rem 1.2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="lab-tag">Modulo 07</div>
+    <h2>Diplomado Gestión Hídrica Corporativa</h2>
+    <div class="course-tag">--------------------------------------------------</div>
+  </div>
+  <div class="toc-title">Contenidos</div>
+  <nav id="toc">
+    <div class="toc-chapter">Sección 1 — Apertura de capas</div>
+    <a href="#sec-intro"><span class="num">1.1</span> Introducción</a>
+    <a href="#sec-qgis"><span class="num">1.2</span> ¿Qué es QGIS?</a>
+    <a href="#sec-formatos"><span class="num">1.3</span> Datos vectoriales</a>
+    <a href="#sec-interfaz"><span class="num">1.4</span> Interfaz de QGIS</a>
+    <a href="#sec-pasos"><span class="num">1.5</span> Abrir un shapefile</a>
+    <a href="#sec-demostracion"><span class="num">1.6</span> Demostración</a>
+    <a href="#sec-resultado"><span class="num">1.7</span> Resultado esperado</a>
+    <div class="toc-chapter">Sección 2 — Tabla de atributos</div>
+    <a href="#sec-atributos-intro"><span class="num">2.1</span> ¿Qué es la tabla?</a>
+    <a href="#sec-abrir-tabla"><span class="num">2.2</span> Abrir tabla de atributos</a>
+    <a href="#sec-acoplar"><span class="num">2.3</span> Acoplar la ventana</a>
+    <a href="#sec-seleccion"><span class="num">2.4</span> Seleccionar registros</a>
+    <a href="#sec-resultado2"><span class="num">2.5</span> Resultado esperado</a>
+    <a href="#sec-demo2"><span class="num">2.6</span> Demostración</a>
+    <div class="toc-chapter">Sección 3 — Mapa base y capas</div>
+    <a href="#sec-teselas-intro"><span class="num">3.1</span> Teselas XYZ</a>
+    <a href="#sec-cargar-teselas"><span class="num">3.2</span> Cargar mapa base</a>
+    <a href="#sec-panel-capas"><span class="num">3.3</span> Ordenar capas</a>
+    <a href="#sec-resultado3"><span class="num">3.4</span> Resultado esperado</a>
+    <a href="#sec-demo3"><span class="num">3.5</span> Demostración</a>
+    <div class="toc-chapter">Sección 4 — Filtro de entidades</div>
+    <a href="#sec-filtro-intro"><span class="num">4.1</span> Filtrar entidades</a>
+    <a href="#sec-filtro-pasos"><span class="num">4.2</span> Constructor de consultas</a>
+    <a href="#sec-filtro-expresion"><span class="num">4.3</span> Escribir la expresión</a>
+    <a href="#sec-filtro-resultado"><span class="num">4.4</span> Resultado esperado</a>
+    <a href="#sec-demo4"><span class="num">4.5</span> Demostración</a>
+	<a href="#sec-ejemplos"><span class="num">4.6</span> Más expresiones</a>
+	<div class="toc-chapter">Sección 5 — Calculadora de campo</div>
+	<a href="#sec-calc-intro"><span class="num">5.1</span> ¿Qué es la calculadora?</a>
+	<a href="#sec-calc-pasos"><span class="num">5.2</span> Crear campo Area_km2</a>
+	<a href="#sec-calc-expresion"><span class="num">5.3</span> La expresión de cálculo</a>
+	<a href="#sec-calc-resultado"><span class="num">5.4</span> Resultado esperado</a>
+	<a href="#sec-demo5"><span class="num">5.5</span> Demostración</a>
+	<div class="toc-chapter">Sección 6 — Simbología y etiquetas</div>
+	<a href="#sec-simb-intro"><span class="num">6.1</span> Simbología vectorial</a>
+	<a href="#sec-simb-categorizado"><span class="num">6.2</span> Estilo categorizado</a>
+	<a href="#sec-simb-etiquetas"><span class="num">6.3</span> Etiquetas sencillas</a>
+	<a href="#sec-simb-resultado"><span class="num">6.4</span> Resultado esperado</a>
+	<a href="#sec-demo6"><span class="num">6.5</span> Demostración</a>
+	<div class="toc-chapter">Sección 7 — Geoprocesos</div>
+	<a href="#sec-geo-intro"><span class="num">7.1</span> ¿Qué son los geoprocesos?</a>
+	<a href="#sec-geo-carga"><span class="num">7.2</span> Cargar Red_Hidrografica</a>
+	<a href="#sec-geo-filtro"><span class="num">7.3</span> Filtrar Río Cautín</a>
+	<a href="#sec-geo-buffer"><span class="num">7.4</span> Geoproceso: Buffer</a>
+	<a href="#sec-geo-resultado"><span class="num">7.5</span> Resultado esperado</a>
+	<a href="#sec-demo7a"><span class="num">7.6</span> Demostración: filtro</a>
+	<a href="#sec-demo7b"><span class="num">7.7</span> Demostración: buffer</a>	
+	<a href="#sec-demo7c"><span class="num">7.8</span> Demostración: guardar resultado</a>
+	<a href="#sec-corte-intro"><span class="num">7.9</span> Geoproceso: Corte</a>
+	<a href="#sec-corte-pasos"><span class="num">7.10</span> Filtrar cuenca Imperial</a>
+	<a href="#sec-corte-ejecutar"><span class="num">7.11</span> Cortar comunas</a>
+	<a href="#sec-corte-resultado"><span class="num">7.12</span> Resultado esperado</a>
+	<a href="#sec-demo7d"><span class="num">7.13</span> Demostración: filtro cuenca</a>
+	<a href="#sec-demo7e"><span class="num">7.14</span> Demostración: corte</a>
+	<a href="#sec-intersect-intro"><span class="num">7.15</span> Geoproceso: Intersección</a>
+	<a href="#sec-intersect-pasos"><span class="num">7.16</span> Ejecutar intersección</a>
+	<a href="#sec-intersect-resultado"><span class="num">7.17</span> Resultado esperado</a>
+	<a href="#sec-demo7f"><span class="num">7.18</span> Demostración: intersección</a>
+	<a href="#sec-disolver-intro"><span class="num">7.19</span> Geoproceso: Disolver</a>
+	<a href="#sec-disolver-pasos"><span class="num">7.20</span> Ejecutar disolución</a>
+	<a href="#sec-disolver-etiquetas"><span class="num">7.21</span> Etiquetas en resultado</a>
+	<a href="#sec-disolver-resultado"><span class="num">7.22</span> Resultado esperado</a>
+	<a href="#sec-demo7g"><span class="num">7.23</span> Demostración: disolver</a>
+	<a href="#sec-union-intro"><span class="num">7.24</span> Geoproceso: Unión</a>
+	<a href="#sec-union-pasos"><span class="num">7.25</span> Ejecutar unión</a>
+	<a href="#sec-union-resultado"><span class="num">7.26</span> Resultado esperado</a>
+	<a href="#sec-demo7h"><span class="num">7.27</span> Demostración: unión</a>
+    <a href="#sec-referencias"><span class="num">—</span> Referencias</a>
+  </nav>
+  <div class="sidebar-footer">Universidad Católica de Temuco<br>Escuela de Ciencias Ambientales</div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+
+  <!-- HEADER -->
+  <div id="doc-header">
+    <div class="header-meta">Guía de Apoyo al Modulo 07</div>
+    <h1>Introducción a QGIS y Análisis Vectorial para la Gestión Hídrica</h1>
+<div class="header-subtitle">Secc. 1: Apertura · Secc. 2: Tabla de atributos · Secc. 3: Mapa base · Secc. 4: Filtro · Secc. 5: Calculadora de campo · Secc. 6: Simbología · Secc. 7: Geoprocesos</div>
+    <div class="header-badges">
+      <span class="badge">QGIS 3.x</span>
+      <span class="badge">Nivel básico</span>
+      <span class="badge">Shapefile (.shp)</span>
+      <span class="badge">Tabla de atributos</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: INTRO -->
+  <h2 class="section-title" id="sec-intro">1.1 Introducción</h2>
+  <p>
+    Si nunca ha utilizado QGIS antes, ¡bienvenido/a! Esta guía le acompañará paso a paso en su primera tarea fundamental: <strong>abrir un archivo de datos geográficos</strong> y visualizarlo en el mapa. No se requiere ningún conocimiento previo de SIG (Sistemas de Información Geográfica).
+  </p>
+  <p>
+    Utilizaremos el <strong>Administrador de Fuentes de Datos</strong>, que es la "ventanilla" de QGIS para incorporar datos al proyecto. Piénselo como el cuadro de diálogo "Abrir archivo" de cualquier programa, pero especializado en datos geográficos.
+  </p>
+
+  <div class="objetivos-box">
+    <h3>Al finalizar esta sección, usted será capaz de:</h3>
+    <ul>
+      <li>Reconocer la interfaz básica de QGIS y sus paneles principales.</li>
+      <li>Identificar qué es un archivo vectorial y por qué se compone de varios archivos.</li>
+      <li>Abrir el <em>Administrador de Fuentes de Datos</em> desde la barra de herramientas.</li>
+      <li>Navegar por su computador para encontrar un archivo <code>.shp</code>.</li>
+      <li>Añadir la capa al proyecto y verificar que se despliega correctamente.</li>
+    </ul>
+  </div>
+
+  <!-- SECCIÓN 2: QUÉ ES QGIS -->
+  <h2 class="section-title" id="sec-qgis">1.2 ¿Qué es QGIS?</h2>
+  <p>
+    QGIS es un programa gratuito y de código abierto que permite <strong>visualizar, editar y analizar información geográfica</strong>. Funciona de manera similar a Google Maps o Google Earth, pero con muchas más herramientas de análisis y sin necesidad de conexión a internet.
+  </p>
+  <p>
+    Con QGIS usted puede, por ejemplo, ver los límites de comunas de Chile, analizar cuencas hidrográficas, calcular áreas de bosque, o identificar zonas de riesgo. Es una herramienta fundamental en ciencias ambientales, geografía, planificación territorial y muchas otras disciplinas.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">📌 Versión recomendada</div>
+    Para esta guía se utiliza <strong>QGIS 3.34 LTR</strong> (Long Term Release). Se recomienda utilizar la versión LTR para mayor estabilidad en contextos académicos y de investigación.
+  </div>
+
+  <!-- SECCIÓN 3: DATOS VECTORIALES -->
+  <h2 class="section-title" id="sec-formatos">1.3 Datos vectoriales y el formato Shapefile</h2>
+  <p>
+    En QGIS, la información geográfica se organiza en <strong>capas</strong>, igual que transparencias apiladas en un mapa físico. Cada capa puede contener un tipo de información: comunas, ríos, caminos, puntos de monitoreo, etc.
+  </p>
+  <p>
+    Los <strong>datos vectoriales</strong> son uno de los dos grandes tipos de datos en SIG (el otro son los rásteres). Representan objetos del mundo real mediante tres tipos de geometría:
+  </p>
+  <div class="callout info">
+    <div class="callout-title">📐 Tipos de geometría vectorial</div>
+    <strong>Punto:</strong> localidades, estaciones meteorológicas, árboles muestreados.<br>
+    <strong>Línea:</strong> ríos, caminos, tendidos eléctricos.<br>
+    <strong>Polígono:</strong> comunas, predios, áreas protegidas, cuencas.
+  </div>
+  <p>
+    El formato más común para intercambiar datos vectoriales es el <strong>Shapefile</strong> (<code>.shp</code>), creado por la empresa ESRI. Su particularidad es que <em>no es un único archivo</em>, sino un conjunto de archivos que deben estar siempre juntos en la misma carpeta:
+  </p>
+
+  <table class="formats">
+    <thead>
+      <tr>
+        <th>Archivo</th>
+        <th>Extensión</th>
+        <th>Contenido</th>
+        <th>¿Obligatorio?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Geometría</td>
+        <td class="ext">.shp</td>
+        <td>Coordenadas y forma de cada entidad</td>
+        <td>✓ Sí</td>
+      </tr>
+      <tr>
+        <td>Índice</td>
+        <td class="ext">.shx</td>
+        <td>Índice de posición de las geometrías</td>
+        <td>✓ Sí</td>
+      </tr>
+      <tr>
+        <td>Atributos</td>
+        <td class="ext">.dbf</td>
+        <td>Tabla de atributos (base de datos dBASE)</td>
+        <td>✓ Sí</td>
+      </tr>
+      <tr>
+        <td>Proyección</td>
+        <td class="ext">.prj</td>
+        <td>Sistema de coordenadas en formato WKT</td>
+        <td>Recomendado</td>
+      </tr>
+      <tr>
+        <td>Metadatos XML</td>
+        <td class="ext">.xml</td>
+        <td>Metadatos geoespaciales (ISO 19139)</td>
+        <td>Opcional</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ Importante</div>
+    Al copiar o mover un shapefile, <strong>deben trasladarse todos los archivos componentes</strong> (al menos <code>.shp</code>, <code>.shx</code> y <code>.dbf</code>). Si falta alguno, QGIS no podrá leer la capa correctamente.
+  </div>
+
+  <!-- SECCIÓN 4: INTERFAZ -->
+  <h2 class="section-title" id="sec-interfaz">1.4 Interfaz de QGIS: elementos clave</h2>
+  <p>
+    Al abrir QGIS por primera vez puede resultar intimidante. La pantalla tiene muchos botones y paneles. Para esta guía, solo necesita conocer <strong>tres zonas</strong>:
+  </p>
+  <div class="callout info">
+    <div class="callout-title">🗺️ Las tres zonas clave de QGIS</div>
+    <strong>1. Lienzo del mapa</strong> (centro): aquí se visualizan las capas geográficas, como si fuera el mapa en sí.<br><br>
+    <strong>2. Panel de Capas</strong> (izquierda): lista todas las capas cargadas en el proyecto, como una tabla de contenidos. Puede activar/desactivar su visibilidad con la casilla de verificación.<br><br>
+    <strong>3. Barras de herramientas</strong> (arriba): filas de botones para las acciones más frecuentes. La que usaremos se llama <em>Administrar capas</em>.
+  </div>
+
+  <h3 class="sub-title">Barra de herramientas — Administrar capas</h3>
+  <p>
+    La barra <strong>Administrar capas</strong> se encuentra, por defecto, en el sector izquierdo de la barra de herramientas superior. Contiene botones de acceso rápido para añadir distintos tipos de capas al proyecto.
+  </p>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Acceso alternativo</div>
+    Si la barra no está visible, puede activarla desde el menú <code>Ver → Barras de herramientas → Administrar capas</code>.
+    También puede utilizar el atajo de teclado <kbd>Ctrl</kbd> + <kbd>L</kbd> para abrir el Administrador de Fuentes de Datos directamente.
+  </div>
+
+  <!-- SECCIÓN 5: PASOS -->
+  <h2 class="section-title" id="sec-pasos">1.5 Procedimiento: abrir un archivo shapefile</h2>
+  <p>
+    A continuación encontrará el procedimiento completo, explicado con el mayor nivel de detalle posible. Siga cada paso en orden y no avance hasta haber completado el anterior.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir QGIS</strong>
+        <p>Busque el icono de QGIS en su escritorio o menú de aplicaciones y ábralo con doble clic. La primera vez que se abre puede tardar algunos segundos. Cuando la pantalla principal esté cargada, verá el lienzo vacío (área gris o blanca central): ese es su "tablero de trabajo".</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Localizar la barra "Administrar capas"</strong>
+        <p>Mire la zona de barras de herramientas en la parte superior de la ventana. Busque un grupo de botones pequeños con íconos de puntos, líneas y polígonos, generalmente ubicados en el lado izquierdo o debajo del menú principal. Esa es la barra <em>Administrar capas</em>.</p>
+        <p>Si no la ve, actívela desde el menú: <span class="step-path">Ver → Barras de herramientas → Administrar capas</span>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Hacer clic en "Añadir capa vectorial"</strong>
+        <p>En la barra <em>Administrar capas</em>, haga clic en el botón que tiene el ícono de <strong>varias figuras geométricas con un signo +</strong> (generalmente un punto, una línea y un polígono juntos). Al pasar el mouse sobre él, debería aparecer el texto <em>"Añadir capa vectorial"</em>.</p>
+        <p>Alternativa: vaya al menú superior <span class="step-path">Capa → Añadir capa → Añadir capa vectorial…</span> o use el atajo <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Se abre el Administrador de Fuentes de Datos</strong>
+        <p>Aparecerá una ventana nueva llamada <strong>Administrador de Fuentes de Datos</strong>En su panel izquierdo verá varios íconos: cada uno representa un tipo diferente de fuente de datos (vectorial, raster, base de datos, etc.). Confirme que esté seleccionada la sección <em>Vectorial</em> (ícono de polígono con lápiz).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Verificar el "Tipo de fuente"</strong>
+        <p>Dentro de la sección Vectorial, verá un menú desplegable llamado <em>Tipo de fuente</em>. Asegúrese de que diga <strong>Archivo</strong>Esta opción le indica a QGIS que va a cargar datos desde un archivo guardado en su computador (no desde internet ni desde una base de datos).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Buscar el archivo .shp en su computador</strong>
+        <p>Haga clic en el botón con tres puntos (<strong>…</strong>) que aparece junto al campo <em>Nombre del conjunto de datos</em>. Se abrirá el explorador de archivos de su sistema operativo (igual que cuando abre un documento en Word o Excel). Navegue hasta la carpeta donde guardó su shapefile y seleccione el archivo con extensión <span class="step-path">.shp</span>. Luego haga clic en <strong>Abrir</strong></p>
+        <p>💡 Si tiene varios archivos con el mismo nombre pero distintas extensiones (.shp, .dbf, .shx…), seleccione siempre el que termina en <code>.shp</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>Hacer clic en "Añadir"</strong>
+        <p>Una vez que el nombre del archivo aparezca en el campo de texto, haga clic en el botón azul <strong>Añadir</strong> que se encuentra en la parte inferior del cuadro de diálogo. Verá cómo la capa aparece listada en el <em>Panel de Capas</em> (izquierda de la pantalla principal) y sus geometrías se dibujan en el lienzo del mapa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <strong>Cerrar el cuadro de diálogo y explorar la capa</strong>
+        <p>Haga clic en <strong>Cerrar</strong> para salir del Administrador de Fuentes de Datos. Ahora puede interactuar con la capa: haga clic derecho sobre su nombre en el panel izquierdo y seleccione <em>Zoom a la capa</em> para que QGIS centre automáticamente el mapa sobre sus datos.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Consejo — Verificación del sistema de coordenadas</div>
+    Después de cargar la capa, revise el sistema de coordenadas en la esquina inferior derecha de la pantalla de QGIS. Para datos de Chile central-sur, el sistema habitual es <strong>EPSG:32718</strong> (WGS 84 / UTM Zone 19S) o <strong>EPSG:4326</strong> (WGS 84 geográfico).
+  </div>
+
+  <!-- SECCIÓN 6: GIF -->
+  <h2 class="section-title" id="sec-demostracion">1.6 Demostración</h2>
+  <p>
+    La siguiente animación ilustra el procedimiento completo descrito en los pasos anteriores.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_qgis.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación: carga de capa vectorial en QGIS</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview"
+        src="img/G01_opt.gif"
+        alt="Demostración animada: apertura de archivo vectorial en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite el atributo <code>src="demo_qgis.gif"</code><br>en el código HTML con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 1.6. Proceso de apertura de un archivo shapefile mediante el Administrador de Fuentes de Datos en QGIS.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Sobre la animación</div>
+    El GIF fue capturado en QGIS 3.34 LTR sobre Windows. Los iconos y disposición de paneles pueden variar levemente entre sistemas operativos (macOS, Linux), pero el procedimiento es idéntico.
+  </div>
+
+  <!-- SECCIÓN 7: RESULTADO ESPERADO -->
+  <h2 class="section-title" id="sec-resultado">1.7 Resultado esperado</h2>
+  <p>
+    Al completar exitosamente el procedimiento, debería observar:
+  </p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Capa listada en el panel de capas</strong>
+        <p>El nombre del archivo aparece en el panel izquierdo <em>Capas</em>, con el ícono correspondiente al tipo de geometría (punto, línea o polígono).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Entidades visibles en el lienzo</strong>
+        <p>Las geometrías de la capa se despliegan en el lienzo del mapa con una simbología predeterminada aleatoria asignada por QGIS.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Sistema de coordenadas reconocido</strong>
+        <p>La esquina inferior derecha de QGIS muestra el sistema de referencia de coordenadas (SRC) de la capa cargada.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║         CAPÍTULO 2 — TABLA DE ATRIBUTOS             ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 2
+  </div>
+  <h2 class="section-title" id="sec-atributos-intro" style="border-color:var(--uct-green);">
+    2.1 La tabla de atributos
+  </h2>
+  <p>
+    Hasta ahora hemos aprendido a <em>ver</em> los datos geográficos en el mapa. Pero cada entidad del mapa (cada polígono, punto o línea) tiene también información asociada en forma de tabla: nombre, código, área, población, etc. Esa información se almacena en la <strong>tabla de atributos</strong>.
+  </p>
+  <p>
+    Piénsela como la hoja de cálculo que está "detrás" del mapa. Cada fila corresponde a una entidad geográfica y cada columna a un campo de información. Lo que hace a QGIS especialmente potente es que <strong>la tabla y el mapa están sincronizados</strong>: si selecciona filas en la tabla, las entidades correspondientes se resaltan automáticamente en el lienzo, y viceversa.
+  </p>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Abrir la tabla de atributos desde el menú contextual de la capa.</li>
+      <li>Acoplar la ventana de atributos al panel inferior de QGIS para trabajar cómodamente.</li>
+      <li>Seleccionar registros en la tabla y verificar que se resaltan en el mapa.</li>
+      <li>Deseleccionar registros una vez terminada la exploración.</li>
+    </ul>
+  </div>
+
+  <!-- SECCIÓN 9 -->
+  <h2 class="section-title" id="sec-abrir-tabla">2.2 Abrir la tabla de atributos</h2>
+  <p>
+    La forma más directa de acceder a la tabla de atributos es a través del <strong>menú contextual</strong> de la capa, es decir, el menú que aparece al hacer clic derecho sobre el nombre de la capa en el Panel de Capas.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">📋 ¿Qué es el menú contextual?</div>
+    Es el menú que aparece al hacer <strong>clic derecho</strong> sobre un elemento. En QGIS, al hacer clic derecho sobre el nombre de una capa en el Panel de Capas, se despliega una lista de acciones disponibles para esa capa: zoom, propiedades, exportar, abrir tabla de atributos, entre otras.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Verificar que la capa está cargada en el Panel de Capas</strong>
+        <p>Asegúrese de que la capa vectorial que cargó en la Sección 1 aparezca listada en el panel izquierdo de QGIS (<em>Panel de Capas</em>). Debe ver su nombre con el ícono de geometría correspondiente a la izquierda.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Hacer clic derecho sobre el nombre de la capa</strong>
+        <p>Ubique el nombre de su capa en el Panel de Capas y haga <strong>clic derecho</strong> sobre él. Se desplegará un menú contextual con varias opciones. No haga clic izquierdo: ese solo selecciona la capa sin abrir el menú.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Seleccionar "Abrir tabla de atributos"</strong>
+        <p>En el menú contextual, busque y haga clic en la opción <strong>Abrir tabla de atributos</strong>También puede usar el atajo de teclado <kbd>F6</kbd> cuando la capa esté seleccionada (resaltada en azul) en el Panel de Capas.</p>
+        <p style="margin-top:.4rem;">Se abrirá una nueva ventana con la tabla de datos asociada a la capa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Explorar la estructura de la tabla</strong>
+        <p>Observe que la tabla tiene <strong>filas</strong> (una por cada entidad del mapa) y <strong>columnas</strong> (una por cada atributo o campo). En la barra inferior de la ventana verá el total de entidades y cuántas están seleccionadas en ese momento.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Acceso alternativo</div>
+    También puede abrir la tabla desde el menú superior: <span class="step-path">Capa → Abrir tabla de atributos</span>, o haciendo clic en el ícono de tabla en la barra de herramientas de atributos (si está habilitada).
+  </div>
+
+  <!-- SECCIÓN 10 -->
+  <h2 class="section-title" id="sec-acoplar">2.3 Acoplar la ventana de atributos</h2>
+  <p>
+    Por defecto, la tabla de atributos se abre como una <strong>ventana flotante</strong> independiente. Esto puede ser incómodo cuando se quiere ver simultáneamente el mapa y la tabla. QGIS permite <strong>acoplar</strong> (o "anclar") esta ventana al panel inferior de la interfaz principal, de modo que ambos elementos queden visibles al mismo tiempo.
+  </p>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ ¿Qué significa "acoplar"?</div>
+    Acoplar una ventana significa fijarla dentro de la interfaz principal del programa, en lugar de dejarla flotando sobre otras ventanas. El resultado es una vista dividida: el mapa arriba y la tabla abajo, ambos en la misma ventana de QGIS.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Con la tabla de atributos abierta, buscar el ícono de acoplamiento</strong>
+        <p>En la barra de título de la ventana de tabla de atributos, busque el ícono pequeño que parece una flecha o un pin apuntando hacia abajo (en algunos temas de QGIS aparece como un ícono de "anclar" o "dock"). Su posición exacta puede variar según el sistema operativo.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Alternativa: configurar desde las preferencias</strong>
+        <p>Si no encuentra el ícono, vaya a <span class="step-path">Configuración → Opciones → Fuentes de datos</span> y active la opción <em>"Abrir tabla de atributos en una ventana acoplada"</em>. Luego cierre y vuelva a abrir la tabla: aparecerá acoplada al panel inferior.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Verificar la vista dividida</strong>
+        <p>Una vez acoplada, la tabla de atributos ocupará la parte inferior de la ventana de QGIS y el lienzo del mapa quedará en la parte superior. Podrá ajustar el tamaño de cada sección arrastrando el divisor horizontal entre ambas áreas.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ Nota sobre versiones y sistemas operativos</div>
+    El comportamiento del acoplamiento puede variar según la versión de QGIS y el sistema operativo. En QGIS 3.x sobre Windows, el acoplamiento suele funcionar arrastrando la ventana hacia el borde inferior de la pantalla principal de QGIS hasta que aparezca un indicador azul de zona de acoplamiento.
+  </div>
+
+  <!-- SECCIÓN 11 -->
+  <h2 class="section-title" id="sec-seleccion">2.4 Seleccionar registros y visualizarlos en el mapa</h2>
+  <p>
+    Una de las funciones más útiles de la tabla de atributos es poder <strong>seleccionar registros</strong> directamente desde ella. Cada registro seleccionado en la tabla se resaltará automáticamente en el mapa con un color amarillo brillante (color de selección predeterminado de QGIS), lo que permite identificar espacialmente las entidades de interés.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Hacer clic en el número de fila para seleccionar un registro</strong>
+        <p>En la tabla de atributos, cada fila tiene un número a la izquierda (encabezado de fila). Haga <strong>clic en ese número</strong> para seleccionar la fila completa. La fila se resaltará en azul dentro de la tabla y la entidad correspondiente aparecerá en <strong>amarillo</strong> en el lienzo del mapa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Seleccionar múltiples registros</strong>
+        <p>Para seleccionar más de un registro a la vez, mantenga presionada la tecla <kbd>Ctrl</kbd> y haga clic en los números de fila que desee agregar a la selección. Cada entidad seleccionada se marcará en amarillo en el mapa de forma simultánea.</p>
+        <p style="margin-top:.4rem;">Para seleccionar un rango continuo de filas, haga clic en la primera, mantenga <kbd>Shift</kbd> y haga clic en la última.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Zoom automático a los registros seleccionados</strong>
+        <p>Si las entidades seleccionadas no son visibles en el lienzo actual, puede ir a <span class="step-path">Ver → Zoom a la selección</span> o usar el atajo <kbd>Ctrl</kbd> + <kbd>J</kbd>. QGIS centrará el mapa automáticamente sobre las entidades seleccionadas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Mostrar solo los registros seleccionados</strong>
+        <p>En la barra inferior de la tabla de atributos hay un menú desplegable que por defecto dice <em>"Mostrar todas las entidades"</em>. Cámbielo a <strong>"Mostrar entidades seleccionadas"</strong> para filtrar la tabla y ver solo las filas que corresponden a sus entidades seleccionadas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Deseleccionar todos los registros</strong>
+        <p>Para eliminar la selección, puede hacer clic en el botón <strong>Deseleccionar todo</strong> (ícono de entidades con una X) en la barra de herramientas de la tabla de atributos, o bien ir al menú <span class="step-path">Edición → Deseleccionar entidades en todas las capas</span>, o usar el atajo <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>A</kbd>.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Selección bidireccional</div>
+    La selección funciona en ambos sentidos. Si selecciona entidades directamente en el mapa (usando la herramienta <em>Seleccionar entidades</em> de la barra de herramientas), esas filas también quedarán resaltadas automáticamente en la tabla de atributos.
+  </div>
+
+  <!-- SECCIÓN 12 -->
+  <h2 class="section-title" id="sec-resultado2">2.5 Resultado esperado</h2>
+  <p>Al completar los tres procedimientos de esta sección, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Tabla de atributos visible y acoplada</strong>
+        <p>La ventana de tabla de atributos se muestra en la parte inferior de QGIS, con el mapa visible en la zona superior. Ambos elementos son visibles simultáneamente.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Registros seleccionados resaltados en azul (tabla) y amarillo (mapa)</strong>
+        <p>Las filas seleccionadas en la tabla aparecen en azul y las entidades geográficas correspondientes se muestran en amarillo sobre el lienzo del mapa.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Conteo de selección en la barra de estado</strong>
+        <p>La barra inferior de la tabla de atributos indica cuántas entidades están seleccionadas del total, por ejemplo: <code>3 de 152 entidades seleccionadas</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 13 -->
+  <h2 class="section-title" id="sec-demo2">2.6 Demostración</h2>
+  <p>
+    La siguiente animación muestra el procedimiento completo de esta sección: apertura de la tabla de atributos, acoplamiento al panel inferior y selección de registros con visualización sincronizada en el mapa.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_tabla_atributos.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación: tabla de atributos y selección de registros</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-2"
+        src="img/G02_opt.gif"
+        alt="Demostración animada: tabla de atributos, acoplamiento y selección en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-2').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-2" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_tabla_atributos.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 2.6. Apertura de la tabla de atributos, acoplamiento al panel inferior y selección sincronizada de registros en QGIS.
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║     SECCIÓN 3 — MAPA BASE Y PANEL DE CAPAS          ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 3
+  </div>
+  <h2 class="section-title" id="sec-teselas-intro" style="border-color:var(--uct-green);">
+    3.1 Mapas base con teselas XYZ
+  </h2>
+  <p>
+    Hasta ahora hemos trabajado con capas propias cargadas desde archivos. Sin embargo, es muy útil disponer de un <strong>mapa base</strong> de referencia visual: imágenes satelitales, cartografía de calles, relieve sombreado, etc. QGIS permite conectarse a servicios de teselas XYZ que proveen este tipo de fondos cartográficos de forma gratuita.
+  </p>
+  <p>
+    Las <strong>teselas XYZ</strong> (también llamadas <em>tile maps</em>) son imágenes rasterizadas pre-generadas que cubren el mundo entero a diferentes niveles de zoom. Servicios como OpenStreetMap, Google Maps, Esri World Imagery o Stamen Terrain se distribuyen en este formato.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🌐 ¿Cómo funcionan las teselas XYZ?</div>
+    El servidor divide el mundo en una cuadrícula. Cada tesela es una imagen pequeña (256×256 píxeles) identificada por tres números: <strong>X</strong> (columna), <strong>Y</strong> (fila) y <strong>Z</strong> (nivel de zoom). QGIS solicita automáticamente solo las teselas visibles en la pantalla, lo que hace el proceso muy eficiente. Se requiere conexión a internet activa.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Conectar un servicio de teselas XYZ desde el Explorador de QGIS.</li>
+      <li>Cargar un mapa base al lienzo del proyecto.</li>
+      <li>Reordenar las capas en el Panel de Capas para que el mapa base quede al fondo.</li>
+      <li>Comprender la lógica de apilamiento de capas en QGIS.</li>
+    </ul>
+  </div>
+
+  <!-- 3.2 -->
+  <h2 class="section-title" id="sec-cargar-teselas">3.2 Cargar un mapa base desde teselas XYZ</h2>
+  <p>
+    QGIS incluye por defecto algunas conexiones XYZ preconfiguradas (como OpenStreetMap). También es posible agregar manualmente la URL de cualquier servicio compatible.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el panel Explorador</strong>
+        <p>Si el panel <em>Explorador</em> no está visible, actívelo desde <span class="step-path">Ver → Paneles → Explorador</span>. Este panel funciona como un navegador de archivos, pero también muestra conexiones a servicios de datos geoespaciales.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Localizar la sección "Teselas XYZ"</strong>
+        <p>En el panel Explorador, desplácese hacia abajo hasta encontrar la entrada <strong>Teselas XYZ</strong> (o <em>XYZ Tiles</em>). Haga clic en la flecha para expandirla. Verá al menos una entrada: <em>OpenStreetMap</em>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Agregar una nueva conexión XYZ (opcional)</strong>
+        <p>Si desea usar un servicio distinto a OpenStreetMap, haga <strong>clic derecho</strong> sobre <em>Teselas XYZ</em> y seleccione <em>Nueva conexión…</em>. Ingrese un nombre y la URL del servicio. Algunos ejemplos útiles:</p>
+        <p><span class="step-path">Google Satellite:</span><br>
+        <code>https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}</code></p>
+        <p><span class="step-path">Esri World Imagery:</span><br>
+        <code>https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}</code></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Cargar la tesela al proyecto</strong>
+        <p>Haga <strong>doble clic</strong> sobre el nombre del servicio (por ejemplo, <em>OpenStreetMap</em>) en el Explorador, o arrástrelo directamente al lienzo del mapa. La capa de teselas se agregará al Panel de Capas y el mapa base aparecerá en el lienzo.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Verificar la carga del mapa base</strong>
+        <p>Si el mapa base no aparece de inmediato, use <span class="step-path">Ver → Zoom a la capa</span> sobre la capa de teselas, o haga zoom con la rueda del mouse hasta un nivel donde las teselas sean visibles. Las teselas requieren conexión a internet activa.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ Sistema de coordenadas del proyecto</div>
+    Los servicios XYZ se sirven en <strong>EPSG:3857</strong> (Web Mercator). Al cargar una tesela, QGIS puede preguntarle si desea reproyectar el proyecto a este sistema. Para uso general con mapa base, puede aceptar. Sus capas vectoriales en EPSG:32718 seguirán siendo correctas gracias a la reproyección al vuelo (<em>on-the-fly</em>) de QGIS.
+  </div>
+
+  <!-- 3.3 -->
+  <h2 class="section-title" id="sec-panel-capas">3.3 Ordenar capas en el Panel de Capas</h2>
+  <p>
+    El <strong>Panel de Capas</strong> de QGIS funciona con una lógica de <strong>apilamiento</strong>: las capas que aparecen más arriba en la lista se dibujan encima de las que están más abajo. Si el mapa base queda sobre sus capas vectoriales, estas quedarán tapadas y no serán visibles.
+  </p>
+  <p>
+    La regla general es simple: el <strong>mapa base siempre debe estar en la posición más baja</strong> del Panel de Capas.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">📐 Lógica de apilamiento de capas</div>
+    Imagine que cada capa es una lámina transparente. Las láminas se apilan de arriba hacia abajo según el orden del panel. Lo que está arriba tapa lo que está abajo. Por eso los polígonos deben ir bajo las líneas, y las líneas bajo los puntos, para que todo sea visible. El mapa base, al ser una imagen de fondo, siempre va en el nivel más inferior.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Identificar el orden actual de capas</strong>
+        <p>Observe el Panel de Capas. Si la capa de teselas XYZ aparece sobre su capa vectorial, deberá moverla hacia abajo. El orden correcto es: <strong>capa vectorial arriba → mapa base abajo</strong></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Arrastrar la capa al orden correcto</strong>
+        <p>Haga <strong>clic sostenido</strong> sobre el nombre de la capa de teselas en el Panel de Capas y arrástrela hacia abajo, soltándola en la posición más baja de la lista. Verá cómo el orden del mapa cambia en tiempo real mientras arrastra.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Verificar la visibilidad de todas las capas</strong>
+        <p>Con el mapa base al fondo, sus capas vectoriales deberían ser visibles sobre él. Si alguna capa no aparece, verifique que su casilla de visibilidad (checkbox a la izquierda del nombre) esté activada.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Activar y desactivar capas</strong>
+        <p>Puede hacer clic en la <strong>casilla de verificación</strong> a la izquierda del nombre de cualquier capa para mostrarla u ocultarla temporalmente sin eliminarla del proyecto. Esto es útil para comparar diferentes capas o simplificar la vista durante el trabajo.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Agrupar capas</div>
+    Si trabaja con muchas capas, puede organizarlas en <strong>grupos</strong>Haga clic derecho en un área vacía del Panel de Capas → <em>Añadir grupo</em>. Luego arrastre las capas dentro del grupo. Los grupos también se pueden expandir/contraer y activar/desactivar en bloque.
+  </div>
+
+  <!-- 3.4 -->
+  <h2 class="section-title" id="sec-resultado3">3.4 Resultado esperado</h2>
+  <p>Al completar esta sección, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Mapa base visible en el lienzo</strong>
+        <p>El fondo del lienzo muestra cartografía de referencia (calles, imágenes satelitales o relieve) proveniente del servicio XYZ conectado.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Capa vectorial visible sobre el mapa base</strong>
+        <p>Las geometrías de su shapefile se despliegan sobre el mapa base, con la capa de teselas en la posición inferior del Panel de Capas.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Control de visibilidad funcionando</strong>
+        <p>Al desactivar la casilla de la capa vectorial, el mapa base queda solo. Al reactivarla, la capa vuelve a aparecer sobre el fondo.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.5 -->
+  <h2 class="section-title" id="sec-demo3">3.5 Demostración</h2>
+  <p>
+    La siguiente animación muestra la carga de un mapa base desde teselas XYZ y el reordenamiento de capas en el Panel de Capas.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_teselas.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación: mapa base XYZ y ordenamiento de capas</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-3"
+        src="img/G03_opt.gif"
+        alt="Demostración animada: teselas XYZ y panel de capas en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-3').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-3" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_teselas.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 3.5. Conexión a servicio de teselas XYZ, carga del mapa base y reordenamiento de capas en el Panel de Capas de QGIS.
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║     SECCIÓN 4 — FILTRO DE ENTIDADES                 ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 4
+  </div>
+  <h2 class="section-title" id="sec-filtro-intro" style="border-color:var(--uct-green);">
+    4.1 Filtrar entidades de una capa
+  </h2>
+  <p>
+    En la sección anterior cargamos una capa llamada <code>comunas</code> que contiene registros de tres regiones distintas: La Araucanía, El Biobío y Los Ríos. Muchas veces, sin embargo, necesitamos trabajar únicamente con un subconjunto de esos datos — por ejemplo, solo las comunas de una región específica — sin necesidad de crear un archivo nuevo.
+  </p>
+  <p>
+    QGIS permite aplicar un <strong>filtro</strong> directamente sobre la capa. Un filtro no elimina ni modifica los datos originales: simplemente le indica a QGIS que <em>muestre</em> solo las entidades que cumplen una condición determinada. El resto queda oculto temporalmente y puede recuperarse en cualquier momento desactivando el filtro.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🔍 Filtro vs. selección</div>
+    <strong>Selección</strong> (vista en la Sección 2): resalta entidades en el mapa y la tabla, pero todas siguen visibles. Es temporal y no afecta el análisis.<br><br>
+    <strong>Filtro</strong>: oculta las entidades que no cumplen la condición. La capa se comporta como si solo existieran las entidades filtradas, lo que afecta análisis, exportaciones y estadísticas.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Acceder al Constructor de consultas desde el menú contextual de la capa.</li>
+      <li>Identificar los campos disponibles en la capa y sus valores únicos.</li>
+      <li>Escribir una expresión de filtro con la sintaxis correcta.</li>
+      <li>Aplicar, verificar y eliminar un filtro sobre una capa vectorial.</li>
+    </ul>
+  </div>
+
+  <!-- 4.2 -->
+  <h2 class="section-title" id="sec-filtro-pasos">4.2 Acceder al Constructor de consultas</h2>
+  <p>
+    El <strong>Constructor de consultas</strong> (Query Builder) es la herramienta de QGIS que permite definir expresiones de filtro mediante una interfaz visual. Se accede desde el menú contextual de la capa, es decir, haciendo clic derecho sobre su nombre en el Panel de Capas.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Clic derecho sobre la capa <code>comunas</code></strong>
+        <p>En el Panel de Capas, ubique la capa <code>comunas</code> y haga <strong>clic derecho</strong> sobre su nombre. Se desplegará el menú contextual con las opciones disponibles para esa capa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Seleccionar "Filtrar…"</strong>
+        <p>En el menú contextual, haga clic en la opción <strong>Filtrar…</strong>Se abrirá el cuadro de diálogo <em>Constructor de consultas</em>. También puede acceder desde <span class="step-path">Capa → Filtrar…</span> en el menú superior.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Conocer la interfaz del Constructor de consultas</strong>
+        <p>El cuadro de diálogo tiene tres zonas principales:</p>
+        <p>— <strong>Campos</strong> (izquierda): lista todos los atributos disponibles en la capa.<br>
+        — <strong>Valores</strong> (derecha): muestra los valores únicos del campo seleccionado.<br>
+        — <strong>Expresión</strong> (inferior): zona de texto donde se escribe o construye la consulta.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 4.3 -->
+  <h2 class="section-title" id="sec-filtro-expresion">4.3 Escribir la expresión de filtro</h2>
+  <p>
+    Las expresiones de filtro en QGIS utilizan una sintaxis similar a SQL. La estructura básica para filtrar por un valor de texto es:
+  </p>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:1rem 1.2rem; border-radius:6px; margin:1rem 0; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#4a9ab5;">-- Estructura general</span><br>
+    <span style="color:#88ccff;">"nombre_campo"</span> = <span style="color:#ffcc88;">'valor a filtrar'</span><br><br>
+    <span style="color:#4a9ab5;">-- Ejemplo aplicado a nuestra capa</span><br>
+    <span style="color:#88ccff;">"Region"</span> = <span style="color:#ffcc88;">'Región de La Araucanía'</span>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Reglas de sintaxis importantes</div>
+    <strong>Nombres de campo</strong>: van entre <strong>comillas dobles</strong> <code>"Region"</code>. Son sensibles a mayúsculas exactamente como aparecen en la tabla de atributos.<br><br>
+    <strong>Valores de texto</strong>: van entre <strong>comillas simples</strong> <code>'Región de La Araucanía'</code>. Deben escribirse exactamente como están en los datos, incluyendo tildes, mayúsculas y espacios.<br><br>
+    <strong>Valores numéricos</strong>: no llevan comillas. Ejemplo: <code>"Poblacion" > 50000</code>
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Identificar el campo de región en la tabla</strong>
+        <p>En el panel <em>Campos</em> del Constructor de consultas, haga doble clic sobre el campo <strong>Region</strong>Esto lo agrega automáticamente a la zona de expresión con las comillas dobles correctas: <code>"Region"</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Explorar los valores disponibles</strong>
+        <p>Con el campo <strong>Region</strong> seleccionado en la lista, haga clic en el botón <strong>Todos</strong> (o <em>Muestreo</em>) en el panel de Valores. Aparecerán los valores únicos que contiene ese campo: verá las tres regiones presentes en la capa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Completar la expresión en la zona de texto</strong>
+        <p>En la zona inferior de expresión, escriba o verifique que quede exactamente así:</p>
+        <p><code>"Region" = 'Región de La Araucanía'</code></p>
+        <p>También puede hacer doble clic sobre el valor <em>Región de La Araucanía</em> en el panel de Valores para insertarlo automáticamente con las comillas simples correctas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Probar la expresión antes de aplicar</strong>
+        <p>Haga clic en el botón <strong>Probar</strong>QGIS le indicará cuántas entidades cumplirían la condición (por ejemplo: <em>"La consulta devolvió 32 filas"</em>). Si el número parece correcto, la expresión está bien escrita.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Aplicar el filtro</strong>
+        <p>Haga clic en <strong>Aceptar</strong>El cuadro de diálogo se cerrará y en el lienzo del mapa solo quedarán visibles las comunas de La Araucanía. En el Panel de Capas, el nombre de la capa aparecerá con un ícono de embudo que señala que hay un filtro activo.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Desactivar el filtro</strong>
+        <p>Para mostrar nuevamente todas las comunas, vuelva a <strong>clic derecho → Filtrar…</strong>, borre el contenido de la zona de expresión dejándola vacía, y haga clic en <strong>Aceptar</strong>El filtro quedará desactivado y todas las entidades volverán a ser visibles.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 El mismo método para otras regiones</div>
+    Para filtrar por Biobío o Los Ríos simplemente cambie el valor entre comillas simples:<br>
+    <code>"Region" = 'Región del Biobío'</code><br>
+    <code>"Region" = 'Región de Los Ríos'</code><br><br>
+    También puede combinar condiciones con <code>OR</code> para mostrar dos regiones simultáneamente:<br>
+    <code>"Region" = 'Región de La Araucanía' OR "Region" = 'Región de Los Ríos'</code>
+  </div>
+
+  <!-- 4.4 -->
+  <h2 class="section-title" id="sec-filtro-resultado">4.4 Resultado esperado</h2>
+  <p>Al aplicar el filtro correctamente, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Solo las comunas de La Araucanía visibles en el lienzo</strong>
+        <p>Las comunas de Biobío y Los Ríos desaparecen del mapa. Solo quedan las entidades que cumplen la condición del filtro.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Indicador de filtro activo en el Panel de Capas</strong>
+        <p>El nombre de la capa <code>comunas</code> muestra un ícono de embudo que indica que hay un filtro activo. Esto es un recordatorio visual de que no está viendo todos los datos.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Tabla de atributos muestra solo las filas filtradas</strong>
+        <p>Al abrir la tabla de atributos (<kbd>F6</kbd>), verá únicamente los registros de La Araucanía. El contador inferior indicará el número reducido de entidades visibles.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ El filtro no modifica el archivo original</div>
+    Los datos de Biobío y Los Ríos siguen intactos en el archivo <code>.shp</code>. El filtro solo actúa sobre la visualización dentro del proyecto QGIS actual. Si guarda el proyecto, el filtro se mantendrá al volver a abrirlo; de lo contrario, la capa volverá a mostrar todas las entidades.
+  </div>
+
+  <!-- 4.5 -->
+  <h2 class="section-title" id="sec-demo4">4.5 Demostración</h2>
+  <p>
+    Las siguientes animaciones muestran el proceso completo: acceso al Constructor de consultas, escritura de la expresión de filtro, verificación del resultado, y finalmente la limpieza del filtro para restaurar todas las entidades de la capa.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.5a — Aplicar filtro por región</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-4"
+        src="img/G04_opt.gif"
+        alt="Demostración: filtro de entidades en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-4').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-4" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.5a. Aplicación de filtro por región mediante el Constructor de consultas en QGIS. La expresión <code>"Region" = 'Región de La Araucanía'</code> reduce la capa <code>comunas</code> a las entidades de interés.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_limpiar_filtro.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel" style="margin-top:1.2rem;">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.5b — Limpiar el filtro</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-4b"
+        src="img/G05_opt.gif"
+        alt="Demostración: limpiar filtro en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-4b').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-4b" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_limpiar_filtro.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.5b. Limpieza del filtro activo desde el Constructor de consultas: se borra la expresión y se acepta, restaurando la visibilidad de todas las entidades de la capa <code>comunas</code>.
+      </div>
+    </div>
+  </div>
+  
+  <!-- 4.6 -->
+  <h2 class="section-title" id="sec-ejemplos">4.6 Ejemplos adicionales de expresiones</h2>
+  <p>
+    A continuación se presentan cuatro expresiones de uso frecuente que amplían las posibilidades del Constructor de consultas. Cada una ilustra un operador distinto de la sintaxis de filtro en QGIS.
+  </p>
+
+  <!-- EJEMPLO 1: operador > -->
+  <h3 class="sub-title">Filtro por valor numérico: operador <code>&gt;</code></h3>
+  <p>
+    Muestra únicamente las comunas cuya superficie supera las 100.000 hectáreas. El operador <code>&gt;</code> (mayor que) se aplica directamente sobre campos numéricos, sin comillas en el valor.
+  </p>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"Area_ha"</span> &gt; <span style="color:#ffcc88;">100000</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_area.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.6a — Filtro numérico con operador &gt;</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-5a"
+        src="img/G06_opt.gif"
+        alt='Demostración: filtro "Area_ha" > 100000'
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-5a').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-5a" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_area.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.6a. Filtro por superficie: comunas con área mayor a 100.000 hectáreas usando el operador <code>&gt;</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- EJEMPLO 2: AND -->
+  <h3 class="sub-title">Combinación de condiciones: operador <code>AND</code></h3>
+  <p>
+    Muestra solo las comunas de la Región de Los Ríos que además superen las 100.000 hectáreas. El operador <code>AND</code> exige que <strong>ambas condiciones se cumplan simultáneamente</strong>. Se pueden encadenar tantas condiciones como sea necesario.
+  </p>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"Region"</span> = <span style="color:#ffcc88;">'Región de Los Ríos'</span> AND <span style="color:#88ccff;">"Area_ha"</span> &gt; <span style="color:#ffcc88;">100000</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_and.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.6b — Filtro combinado con AND</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-5b"
+        src="img/G07_opt.gif"
+        alt="Demostración: filtro con AND en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-5b').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-5b" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_and.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.6b. Filtro combinado con <code>AND</code>: comunas de Los Ríos con superficie mayor a 100.000 ha.
+      </div>
+    </div>
+  </div>
+
+  <!-- EJEMPLO 3: LIKE -->
+  <h3 class="sub-title">Búsqueda de texto parcial: operador <code>LIKE</code></h3>
+  <p>
+    Encuentra comunas cuyo nombre contiene el texto <em>"Cura"</em> en cualquier posición. El operador <code>LIKE</code> permite búsquedas de texto parcial usando el comodín <code>%</code>, que representa cualquier secuencia de caracteres (incluyendo ninguno).
+  </p>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Uso del comodín <code>%</code></div>
+    <code>'%Cura%'</code> — contiene "Cura" en cualquier posición (antes, en medio o al final).<br>
+    <code>'Cura%'</code> — comienza exactamente con "Cura".<br>
+    <code>'%Cura'</code> — termina exactamente con "Cura".
+  </div>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"Comuna"</span> LIKE <span style="color:#ffcc88;">'%Cura%'</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_like.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.6c — Búsqueda parcial con LIKE</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-5c"
+        src="img/G08_opt.gif"
+        alt="Demostración: filtro LIKE en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-5c').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-5c" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_like.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.6c. Búsqueda de texto parcial con <code>LIKE</code>: comunas que contienen "Cura" en su nombre.
+      </div>
+    </div>
+  </div>
+
+  <!-- EJEMPLO 4: BETWEEN -->
+  <h3 class="sub-title">Rango de valores: operador <code>BETWEEN</code></h3>
+  <p>
+    Filtra las comunas cuya superficie se encuentra entre 100.000 y 200.000 hectáreas, ambos valores incluidos. El operador <code>BETWEEN</code> es equivalente a escribir <code>"Area_ha" >= 100000 AND "Area_ha" <= 200000</code>, pero resulta más legible.
+  </p>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"Area_ha"</span> BETWEEN <span style="color:#ffcc88;">100000</span> AND <span style="color:#ffcc88;">200000</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_between.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 4.6d — Rango de valores con BETWEEN</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-5d"
+        src="img/G09_opt.gif"
+        alt="Demostración: filtro BETWEEN en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-5d').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-5d" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_between.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 4.6d. Filtro por rango con <code>BETWEEN</code>: comunas con superficie entre 100.000 y 200.000 hectáreas (valores incluidos).
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Tabla de referencia rápida de operadores</div>
+    <table style="width:100%; border-collapse:collapse; font-family:var(--sans); font-size:.85rem; margin-top:.4rem;">
+      <thead>
+        <tr>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Operador</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Uso</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Tipo de dato</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><code>=</code></td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Igual a</td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Texto / Número</td></tr>
+        <tr style="background:var(--uct-green-light);"><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Mayor / Menor que</td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Número</td></tr>
+        <tr><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><code>BETWEEN … AND …</code></td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Rango (incluye extremos)</td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Número</td></tr>
+        <tr style="background:var(--uct-green-light);"><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><code>LIKE '%texto%'</code></td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Contiene texto parcial</td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Texto</td></tr>
+        <tr><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><code>AND</code></td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Ambas condiciones</td><td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Cualquiera</td></tr>
+        <tr style="background:var(--uct-green-light);"><td style="padding:.35rem .7rem;"><code>OR</code></td><td style="padding:.35rem .7rem;">Al menos una condición</td><td style="padding:.35rem .7rem;">Cualquiera</td></tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║     SECCIÓN 5 — CALCULADORA DE CAMPO                ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 5
+  </div>
+  <h2 class="section-title" id="sec-calc-intro" style="border-color:var(--uct-green);">
+    5.1 La calculadora de campo
+  </h2>
+  <p>
+    La <strong>calculadora de campo</strong> es una de las herramientas más potentes de QGIS. Permite crear nuevos campos en la tabla de atributos y calcular su valor a partir de expresiones matemáticas, funciones geométricas, o combinaciones de campos existentes.
+  </p>
+  <p>
+    En este caso la utilizaremos para crear el campo <code>Area_km2</code>, que almacenará la superficie de cada comuna expresada en <strong>kilómetros cuadrados</strong>. QGIS puede calcular el área directamente desde la geometría de cada polígono, sin necesidad de tener un campo de área previo.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">📐 ¿Por qué calcular el área desde la geometría?</div>
+    Cada polígono en QGIS tiene una geometría asociada que contiene las coordenadas de sus vértices. A partir de esas coordenadas, QGIS puede calcular propiedades geométricas como área, perímetro o centroide de forma automática y precisa, siempre que el sistema de coordenadas esté en unidades métricas (como EPSG:32718, en metros).
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Abrir la calculadora de campo desde la tabla de atributos.</li>
+      <li>Configurar un nuevo campo numérico de tipo decimal.</li>
+      <li>Usar la función <code>$area</code> para calcular el área desde la geometría.</li>
+      <li>Convertir el resultado de metros cuadrados a kilómetros cuadrados.</li>
+      <li>Guardar los cambios y verificar el nuevo campo en la tabla.</li>
+    </ul>
+  </div>
+
+  <!-- 5.2 -->
+  <h2 class="section-title" id="sec-calc-pasos">5.2 Abrir la calculadora y configurar el nuevo campo</h2>
+  <p>
+    La calculadora de campo se abre desde la barra de herramientas de la tabla de atributos. Antes de escribir la expresión, es necesario configurar el nombre y tipo del campo que se va a crear.
+  </p>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ La capa debe estar en modo edición</div>
+    Para modificar la tabla de atributos, QGIS exige que la capa esté en <strong>modo edición</strong>La calculadora de campo activa este modo automáticamente al abrirse, pero es importante saberlo: cualquier cambio en la tabla requiere iniciar y luego guardar o cancelar la edición.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir la tabla de atributos de la capa <code>comunas</code></strong>
+        <p>Haga clic derecho sobre la capa <code>comunas</code> en el Panel de Capas y seleccione <strong>Abrir tabla de atributos</strong> (o presione <kbd>F6</kbd>). Verifique que el filtro de la sección anterior esté desactivado para operar sobre todas las comunas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Abrir la calculadora de campo</strong>
+        <p>En la barra de herramientas de la tabla de atributos, haga clic en el ícono de la <strong>calculadora de campo</strong> (ábaco o calculadora con lápiz). También puede abrirla desde el menú <span class="step-path">Ver → Calculadora de campo</span> o con el atajo <kbd>Ctrl</kbd> + <kbd>I</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Seleccionar "Crear un nuevo campo"</strong>
+        <p>En la parte superior del cuadro de diálogo, asegúrese de que esté marcada la opción <strong>Crear un nuevo campo</strong>Esta opción agrega una columna nueva a la tabla sin modificar los campos existentes.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Configurar el nombre y tipo del campo</strong>
+        <p>Complete los campos de configuración de la siguiente manera:</p>
+        <p>— <strong>Nombre del campo de salida:</strong> <code>Area_km2</code><br>
+        — <strong>Tipo:</strong> <code>Número decimal (real)</code><br>
+        — <strong>Longitud:</strong> <code>10</code><br>
+        — <strong>Precisión:</strong> <code>4</code></p>
+        <p>La precisión de 4 decimales es suficiente para superficies comunales en km².</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 5.3 -->
+  <h2 class="section-title" id="sec-calc-expresion">5.3 La expresión de cálculo</h2>
+  <p>
+    Con el campo configurado, el siguiente paso es escribir la expresión en la zona central del cuadro de diálogo. QGIS utiliza la función <code>$area</code> para obtener el área de cada polígono en las unidades del sistema de coordenadas del proyecto (metros cuadrados si el SRC está en metros). Para convertir a kilómetros cuadrados se divide por 1.000.000.
+  </p>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:1rem 1.2rem; border-radius:6px; margin:1rem 0; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#4a9ab5;">-- Área en metros cuadrados → kilómetros cuadrados</span><br>
+    <span style="color:#c792ea;">$area</span> / <span style="color:#ffcc88;">1000000</span>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ ¿Por qué dividir por 1.000.000?</div>
+    Si el SRC del proyecto está en metros (como EPSG:32718), <code>$area</code> devuelve el área en <strong>metros cuadrados</strong>. Como 1 km² = 1.000.000 m², dividir por 1.000.000 convierte el resultado a kilómetros cuadrados. Si el SRC estuviera en grados (EPSG:4326), el resultado no sería métrico y la conversión no aplicaría.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Escribir la expresión en la zona de texto</strong>
+        <p>En el panel central de la calculadora, escriba la expresión:</p>
+        <p><code>$area / 1000000</code></p>
+        <p>También puede construirla navegando en el panel de funciones: expanda <em>Geometría</em> → haga doble clic en <strong>$area</strong> → escriba <code>/ 1000000</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Verificar la vista previa del resultado</strong>
+        <p>Debajo de la zona de expresión aparece el campo <em>Vista previa de la salida</em>, que muestra el resultado calculado para la primera entidad de la capa. Verifique que el valor sea coherente con la superficie esperada de una comuna (valores típicos entre 50 y 15.000 km² para comunas chilenas).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Hacer clic en Aceptar</strong>
+        <p>Haga clic en <strong>Aceptar</strong>QGIS calculará el área para cada entidad y llenará el nuevo campo <code>Area_km2</code> en toda la tabla. El proceso es inmediato para capas de tamaño normal.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Guardar los cambios de edición</strong>
+        <p>El nuevo campo existe en memoria pero aún no está guardado en el archivo. Haga clic en el ícono de <strong>Guardar ediciones de la capa</strong> (disquete con lápiz) en la barra de herramientas de la tabla, o desde <span class="step-path">Capa → Guardar ediciones de la capa</span>. Luego desactive el modo edición haciendo clic en el ícono de lápiz.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Verificar con la tabla de atributos</div>
+    Una vez guardado, abra la tabla de atributos (<kbd>F6</kbd>) y desplácese hacia la derecha hasta encontrar la columna <code>Area_km2</code>. Puede comparar sus valores con el campo <code>Area_ha</code> original: 1 km² = 100 ha, por lo que <code>Area_km2</code> debería ser igual a <code>Area_ha / 100</code>.
+  </div>
+
+  <!-- 5.4 -->
+  <h2 class="section-title" id="sec-calc-resultado">5.4 Resultado esperado</h2>
+  <p>Al completar esta sección, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Nueva columna <code>Area_km2</code> en la tabla de atributos</strong>
+        <p>El campo aparece al final de la tabla con valores decimales correspondientes al área de cada comuna en kilómetros cuadrados.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Valores coherentes con <code>Area_ha</code></strong>
+        <p>Si divide cualquier valor de <code>Area_ha</code> por 100, debe obtener el valor correspondiente de <code>Area_km2</code>. Esta es una buena verificación de coherencia.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Campo guardado permanentemente en el shapefile</strong>
+        <p>Al abrir el archivo <code>.dbf</code> con cualquier herramienta (Excel, LibreOffice), el campo <code>Area_km2</code> es visible como una columna permanente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5.5 -->
+  <h2 class="section-title" id="sec-demo5">5.5 Demostración</h2>
+  <p>
+    La siguiente animación muestra el proceso completo: apertura de la calculadora de campo, configuración del campo <code>Area_km2</code>, escritura de la expresión <code>$area / 1000000</code> y guardado de los cambios.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_calculadora.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 5.5 — Calculadora de campo: Area_km2</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-6"
+        src="img/G10_opt.gif"
+        alt="Demostración: calculadora de campo en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-6').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-6" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_calculadora.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 5.5. Creación del campo <code>Area_km2</code> usando la calculadora de campo de QGIS con la expresión <code>$area / 1000000</code>.
+      </div>
+    </div>
+  </div>
+  
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║     SECCIÓN 6 — SIMBOLOGÍA Y ETIQUETAS              ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 6
+  </div>
+  <h2 class="section-title" id="sec-simb-intro" style="border-color:var(--uct-green);">
+    6.1 Simbología vectorial en QGIS
+  </h2>
+  <p>
+    Hasta ahora hemos cargado, filtrado y calculado atributos sobre nuestra capa de comunas. Sin embargo, el mapa aún se muestra con el color predeterminado que QGIS asignó al cargar la capa — un color único para todas las entidades. La <strong>simbología</strong> permite representar visualmente las diferencias entre entidades a partir de sus atributos, haciendo el mapa mucho más informativo.
+  </p>
+  <p>
+    QGIS ofrece varios tipos de simbología para capas vectoriales. En esta sección utilizaremos el tipo <strong>categorizado</strong>, que asigna un color distinto a cada valor único de un campo seleccionado — en nuestro caso, el nombre de cada comuna.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🎨 Tipos de simbología en QGIS</div>
+    <strong>Símbolo único:</strong> todas las entidades con el mismo color y forma. Útil para resaltar la capa sin distinción.<br><br>
+    <strong>Categorizado:</strong> un color por cada valor único de un campo. Ideal para variables cualitativas como nombres, tipos o categorías.<br><br>
+    <strong>Graduado:</strong> rampa de colores según un rango numérico. Ideal para variables cuantitativas como área, población o temperatura.<br><br>
+    <strong>Basado en reglas:</strong> simbología condicional con expresiones personalizadas para casos más complejos.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Acceder al panel de Propiedades de capa y la pestaña Simbología.</li>
+      <li>Configurar una simbología de tipo categorizado usando el campo <code>Comuna</code>.</li>
+      <li>Aplicar una rampa de colores aleatorios a las categorías clasificadas.</li>
+      <li>Agregar etiquetas sencillas al mapa usando el nombre de cada comuna.</li>
+      <li>Ajustar la fuente y visibilidad de las etiquetas.</li>
+    </ul>
+  </div>
+
+  <!-- 6.2 -->
+  <h2 class="section-title" id="sec-simb-categorizado">6.2 Simbología categorizada por comuna</h2>
+  <p>
+    La simbología categorizada se configura desde el panel de <strong>Propiedades de la capa</strong>, en la pestaña <em>Simbología</em>. Se accede haciendo doble clic sobre el nombre de la capa en el Panel de Capas, o mediante clic derecho → <em>Propiedades…</em>
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir Propiedades de la capa</strong>
+        <p>Haga <strong>doble clic</strong> sobre la capa <code>comunas</code> en el Panel de Capas. Se abrirá el cuadro de diálogo <em>Propiedades de la capa</em>. En el panel izquierdo, haga clic en la pestaña <strong>Simbología</strong> (ícono de pincel o paleta de colores).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Cambiar el tipo de simbología a "Categorizado"</strong>
+        <p>En la parte superior del panel de simbología verá un menú desplegable que por defecto dice <em>Símbolo único</em>. Haga clic sobre él y seleccione <strong>Categorizado</strong>El panel mostrará nuevas opciones de configuración.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Seleccionar el campo de valor</strong>
+        <p>En el menú desplegable <em>Valor</em>, seleccione el campo <strong>Comuna</strong>Este campo contiene el nombre de cada comuna y será la variable que determine el color asignado a cada entidad.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Seleccionar la rampa de colores</strong>
+        <p>En el selector <em>Rampa de color</em>, haga clic sobre la rampa actual para desplegar las opciones disponibles. Seleccione <strong>Colores aleatorios</strong> (Random colors). Esta opción asigna un color diferente a cada categoría de forma automática.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Clasificar las categorías</strong>
+        <p>Haga clic en el botón <strong>Clasificar</strong> ubicado en la parte inferior del panel. QGIS generará automáticamente una categoría por cada nombre de comuna único en el campo, asignando un color distinto a cada una. Verá la lista completa de comunas con su color correspondiente.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Aplicar y verificar en el mapa</strong>
+        <p>Haga clic en <strong>Aplicar</strong> para ver el resultado en el lienzo sin cerrar el cuadro de propiedades. Cada comuna aparecerá con un color distinto. Si desea regenerar los colores aleatorios, haga clic nuevamente en <strong>Clasificar</strong></p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Modificar el color de una categoría</div>
+    Puede cambiar el color de cualquier categoría individualmente haciendo <strong>doble clic</strong> sobre el ícono de color correspondiente en la lista de categorías. Se abrirá el selector de color de QGIS donde puede elegir un color específico o ingresar un código hexadecimal.
+  </div>
+
+  <!-- 6.3 -->
+  <h2 class="section-title" id="sec-simb-etiquetas">6.3 Agregar etiquetas sencillas</h2>
+  <p>
+    Las <strong>etiquetas</strong> permiten mostrar texto sobre las entidades del mapa directamente desde un campo de la tabla de atributos. En este caso mostraremos el nombre de cada comuna usando el campo <code>Comuna</code>.
+  </p>
+  <p>
+    Las etiquetas se configuran en la pestaña <strong>Etiquetas</strong> del mismo cuadro de diálogo de Propiedades de la capa, que puede mantener abierto desde el paso anterior.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Ir a la pestaña Etiquetas</strong>
+        <p>En el panel izquierdo del cuadro de Propiedades, haga clic en la pestaña <strong>Etiquetas</strong> (ícono de letra "a" con un punto). Se abrirá el panel de configuración de etiquetas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Activar las etiquetas sencillas</strong>
+        <p>En el menú desplegable superior, que por defecto dice <em>Sin etiquetas</em>, seleccione <strong>Etiquetas sencillas</strong>Se habilitarán todas las opciones de configuración de texto.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Seleccionar el campo de valor</strong>
+        <p>En el selector <em>Valor</em>, elija el campo <strong>Comuna</strong>Este es el campo cuyo contenido se mostrará como texto sobre cada entidad en el mapa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Ajustar la fuente (opcional)</strong>
+        <p>En la sección <em>Texto</em> puede modificar el tipo de fuente, tamaño y color. Para comunas a escala regional, un tamaño entre <strong>7 y 9 puntos</strong> suele ser adecuado. Un color oscuro como negro o gris oscuro garantiza legibilidad sobre los colores de relleno.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Aplicar y cerrar</strong>
+        <p>Haga clic en <strong>Aplicar</strong> para ver las etiquetas en el lienzo y luego en <strong>Aceptar</strong> para cerrar el cuadro de propiedades. Los nombres de las comunas aparecerán centrados sobre cada polígono.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Etiquetas superpuestas</div>
+    Cuando las comunas son pequeñas o están muy juntas, algunas etiquetas pueden superponerse o quedar fuera del polígono. QGIS gestiona esto automáticamente según el nivel de zoom: a mayor zoom, más etiquetas serán visibles y mejor posicionadas. En la pestaña <em>Representación</em> de las opciones de etiquetas puede ajustar las reglas de visibilidad por escala.
+  </div>
+
+  <!-- 6.4 -->
+  <h2 class="section-title" id="sec-simb-resultado">6.4 Resultado esperado</h2>
+  <p>Al completar esta sección, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Cada comuna con un color distinto en el mapa</strong>
+        <p>Las comunas de las tres regiones (Biobío, La Araucanía y Los Ríos) se distinguen visualmente por colores diferentes, uno por cada valor único del campo <code>Comuna</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Leyenda actualizada en el Panel de Capas</strong>
+        <p>El Panel de Capas muestra la lista de comunas con su color asignado, funcionando como una leyenda integrada del mapa.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Nombre de cada comuna visible sobre el polígono</strong>
+        <p>Las etiquetas con el nombre de cada comuna se despliegan centradas sobre sus respectivos polígonos, ajustándose automáticamente según el nivel de zoom.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6.5 -->
+  <h2 class="section-title" id="sec-demo6">6.5 Demostración</h2>
+  <p>
+    La siguiente animación muestra el proceso completo: configuración de la simbología categorizada por el campo <code>Comuna</code> con colores aleatorios, y activación de etiquetas sencillas con el nombre de cada comuna.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_simbologia.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 6.5 — Simbología categorizada y etiquetas</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-7"
+        src="img/G11_opt.gif"
+        alt="Demostración: simbología categorizada y etiquetas en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-7').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-7" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_simbologia.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 6.5. Configuración de simbología categorizada por el campo <code>Comuna</code> con rampa de colores aleatorios, y activación de etiquetas sencillas en QGIS.
+      </div>
+    </div>
+  </div>
+  <hr class="section-sep">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║     SECCIÓN 7 — GEOPROCESOS: BUFFER                 ║
+       ╚══════════════════════════════════════════════════════╝ -->
+
+  <div style="background:var(--uct-green-dark); color:#fff; font-family:var(--sans); font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:.45rem 1rem; border-radius:5px; display:inline-block; margin:2rem 0 .5rem;">
+    Sección 7
+  </div>
+  <h2 class="section-title" id="sec-geo-intro" style="border-color:var(--uct-green);">
+    7.1 ¿Qué son los geoprocesos?
+  </h2>
+  <p>
+    Los <strong>geoprocesos</strong> (o geoprocessing) son operaciones de análisis espacial que generan nuevas capas o resultados a partir de capas existentes. A diferencia de la simbología o las etiquetas — que solo cambian cómo se ve la información — los geoprocesos <em>transforman</em> la geometría o los atributos, produciendo datos nuevos.
+  </p>
+  <p>
+    QGIS agrupa estas herramientas en el <strong>Panel de herramientas de geoprocesos</strong> (Processing Toolbox), que contiene cientos de algoritmos organizados por categoría: geometría, análisis vectorial, análisis ráster, estadísticas, entre otros. En las siguientes secciones de esta guía exploraremos los geoprocesos más utilizados en análisis ambiental y territorial, comenzando por el <strong>Buffer</strong>.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">📦 Panel de herramientas de geoprocesos</div>
+    Para abrir el panel, vaya a <span class="step-path">Procesos → Caja de herramientas</span> en el menú superior, o use el atajo <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>. El panel se abrirá en el lateral derecho de QGIS. Puede buscar cualquier herramienta escribiendo su nombre en la barra de búsqueda del panel.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta sección aprenderá a:</h3>
+    <ul>
+      <li>Cargar una capa de líneas (<code>Red_Hidrografica</code>) al proyecto.</li>
+      <li>Filtrar un río específico usando el campo <code>Nombre</code>.</li>
+      <li>Localizar la herramienta Buffer en el Panel de herramientas de geoprocesos.</li>
+      <li>Configurar un buffer de 200 m sobre los segmentos seleccionados.</li>
+      <li>Aplicar la opción de disolver el resultado para obtener un polígono continuo.</li>
+    </ul>
+  </div>
+
+  <!-- 7.2 -->
+  <h2 class="section-title" id="sec-geo-carga">7.2 Cargar la capa Red_Hidrografica</h2>
+  <p>
+    Antes de aplicar cualquier geoproceso, es necesario cargar la capa de líneas <code>Red_Hidrografica</code> al proyecto. Esta capa contiene los segmentos de los cursos de agua del área de estudio, con el nombre de cada río o estero en el campo <code>Nombre</code>.
+  </p>
+  <p>
+    El procedimiento es idéntico al descrito en la <strong>Sección 1.5</strong> para cargar un shapefile: abra el Administrador de Fuentes de Datos (<kbd>Ctrl</kbd> + <kbd>L</kbd>), seleccione el archivo <code>Red_Hidrografica.shp</code> y haga clic en <strong>Añadir</strong>La capa aparecerá en el Panel de Capas con el ícono de línea correspondiente.
+  </p>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Orden recomendado de capas</div>
+    Una vez cargada, ubique la capa <code>Red_Hidrografica</code> por encima de la capa <code>comunas</code> en el Panel de Capas, y ambas sobre el mapa base. Los elementos lineales deben estar sobre los polígonos para que sean visibles.
+  </div>
+
+  <!-- 7.3 -->
+  <h2 class="section-title" id="sec-geo-filtro">7.3 Filtrar el Río Cautín</h2>
+  <p>
+    La capa <code>Red_Hidrografica</code> contiene todos los cursos de agua del área de estudio. Para aplicar el buffer únicamente sobre el <strong>Río Cautín</strong>, utilizaremos el Constructor de consultas (visto en la Sección 4) para filtrar la capa antes de ejecutar el geoproceso.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Constructor de consultas sobre <code>Red_Hidrografica</code></strong>
+        <p>Haga <strong>clic derecho</strong> sobre la capa <code>Red_Hidrografica</code> en el Panel de Capas y seleccione <strong>Filtrar…</strong>Se abrirá el Constructor de consultas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Escribir la expresión de filtro</strong>
+        <p>En la zona de expresión, ingrese exactamente:</p>
+        <p><code>"Nombre" = 'Río Cautín'</code></p>
+        <p>Recuerde que el nombre del campo va entre comillas dobles y el valor entre comillas simples, respetando tildes y mayúsculas tal como aparecen en los datos.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Probar y aplicar el filtro</strong>
+        <p>Haga clic en <strong>Probar</strong> para verificar cuántos segmentos corresponden al Río Cautín. Si el número es coherente, haga clic en <strong>Aceptar</strong>En el lienzo solo quedarán visibles los segmentos del Río Cautín.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1.2rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"Nombre"</span> = <span style="color:#ffcc88;">'Río Cautín'</span>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ ¿Por qué filtrar antes del buffer?</div>
+    Al aplicar el filtro antes del geoproceso, la herramienta Buffer solo procesará los segmentos visibles del Río Cautín. Si la capa no estuviera filtrada, el buffer se generaría sobre <em>todos</em> los ríos y esteros de la red hidrográfica, lo que no es el objetivo de este ejercicio.
+  </div>
+
+  <!-- GIF 7.6 -->
+  <h2 class="section-title" id="sec-demo7a">7.6 Demostración: filtro del Río Cautín</h2>
+  <p>
+    La siguiente animación muestra cómo cargar la capa <code>Red_Hidrografica</code> y aplicar el filtro <code>"Nombre" = 'Río Cautín'</code> para aislar los segmentos del río antes del geoproceso.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_cautin.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.6 — Carga de Red_Hidrografica y filtro Río Cautín</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-8a"
+        src="img/G12_opt.gif"
+        alt="Demostración: carga de Red_Hidrografica y filtro Río Cautín"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-8a').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-8a" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_cautin.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.6. Carga de la capa <code>Red_Hidrografica</code> y aplicación del filtro <code>"Nombre" = 'Río Cautín'</code> en el Constructor de consultas.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.4 -->
+  <h2 class="section-title" id="sec-geo-buffer">7.4 Geoproceso: Buffer</h2>
+  <p>
+    Con el filtro aplicado, la capa <code>Red_Hidrografica</code> muestra únicamente los segmentos del Río Cautín. Ahora ejecutaremos la herramienta <strong>Buffer</strong> desde el Panel de herramientas de geoprocesos para generar una zona de influencia de 200 metros alrededor del río.
+  </p>
+  <p>
+    El resultado será un <strong>polígono</strong> que representa el área comprendida dentro de los 200 m de distancia del Río Cautín, útil por ejemplo para análisis de zonas de protección ribereña, riesgo de inundación o planificación territorial.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🔵 ¿Qué es un buffer?</div>
+    Un buffer (o zona de influencia) es un polígono que rodea una entidad geográfica a una distancia determinada. Se puede aplicar sobre puntos, líneas o polígonos. La distancia se expresa en las unidades del sistema de coordenadas del proyecto — en este caso, <strong>metros</strong> (EPSG:32718). Un buffer de 200 m genera un corredor de 200 metros a cada lado del eje del río.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Panel de herramientas de geoprocesos</strong>
+        <p>Vaya a <span class="step-path">Procesos → Caja de herramientas</span> o presione <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>. El panel se abrirá en el lateral derecho de QGIS.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Buscar la herramienta Buffer</strong>
+        <p>En la barra de búsqueda del panel, escriba <strong>buffer</strong>Aparecerán varias opciones. Seleccione <strong>Buffer</strong> dentro de la categoría <em>Análisis vectorial</em> (QGIS). Haga doble clic para abrir la herramienta.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Configurar la capa de entrada</strong>
+        <p>En el campo <em>Capa de entrada</em>, seleccione <strong>Red_Hidrografica</strong>Como la capa tiene un filtro activo, el buffer se ejecutará únicamente sobre los segmentos del Río Cautín visibles.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Definir la distancia: 200 metros</strong>
+        <p>En el campo <em>Distancia</em>, ingrese el valor <strong>200</strong>Como el proyecto está en EPSG:32718 (metros), este valor corresponde a 200 metros reales sobre el terreno. Deje los demás parámetros con sus valores por defecto.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Activar la opción "Disolver el resultado"</strong>
+        <p>Marque la casilla <strong>Disolver el resultado</strong>Esta opción fusiona todos los polígonos de buffer generados por cada segmento en un único polígono continuo, eliminando los límites internos entre segmentos adyacentes. Sin esta opción, cada segmento del río generaría su propio polígono de buffer independiente.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Definir la capa de salida (opcional)</strong>
+        <p>En el campo <em>Buffer</em> (capa de salida), puede dejar la opción <em>Crear capa temporal</em> para explorar el resultado antes de guardarlo definitivamente. Si desea guardar directamente, haga clic en los tres puntos (<strong>…</strong>) y elija una ruta y nombre para el archivo de salida, por ejemplo <code>Buffer_RioCautin_200m.shp</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>Ejecutar el geoproceso</strong>
+        <p>Haga clic en <strong>Ejecutar</strong>QGIS procesará los segmentos y añadirá automáticamente la nueva capa de buffer al Panel de Capas y al lienzo del mapa. El proceso es prácticamente instantáneo para esta capa.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ Capas temporales vs. permanentes</div>
+    Las capas temporales (fondo rayado en el Panel de Capas) se pierden al cerrar QGIS si no se guardan. Para conservar el resultado, haga clic derecho sobre la capa temporal → <em>Exportar → Guardar entidades como…</em> y guárdela como shapefile o GeoPackage.
+  </div>
+
+  <!-- 7.5 -->
+  <h2 class="section-title" id="sec-geo-resultado">7.5 Resultado esperado</h2>
+  <p>Al completar esta sección, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Nueva capa de polígono en el Panel de Capas</strong>
+        <p>Aparece una capa llamada <em>Buffer</em> (o el nombre que haya definido) con ícono de polígono, representando la zona de 200 m alrededor del Río Cautín.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Polígono continuo sin divisiones internas</strong>
+        <p>Gracias a la opción <em>Disolver</em>, el resultado es un único polígono que sigue el trazado completo del río, sin separaciones entre los segmentos originales.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Corredor de 200 m visible en ambas márgenes</strong>
+        <p>El polígono de buffer rodea simétricamente el eje del río, con una distancia de 200 m hacia cada lado, representando la franja de protección o análisis definida.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.7 -->
+  <h2 class="section-title" id="sec-demo7b">7.7 Demostración: buffer de 200 m</h2>
+  <p>
+    La siguiente animación muestra la ejecución completa del geoproceso Buffer sobre los segmentos filtrados del Río Cautín: apertura del panel de herramientas, configuración de los parámetros (distancia 200 m, disolver activado) y visualización del resultado en el mapa.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_buffer.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.7 — Buffer de 200 m sobre Río Cautín</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-8b"
+        src="img/G13_opt.gif"
+        alt="Demostración: buffer 200 m Río Cautín en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-8b').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-8b" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_buffer.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.7. Ejecución del geoproceso Buffer con distancia de 200 m y opción disolver activada sobre los segmentos del Río Cautín (<code>Red_Hidrografica</code>).
+      </div>
+    </div>
+  </div>
+  <!-- 7.8 -->
+  <h2 class="section-title" id="sec-demo7c">7.8 Guardar el resultado del buffer</h2>
+  <p>
+    Al ejecutar el geoproceso, QGIS agrega automáticamente el resultado al Panel de Capas como una <strong>capa temporal</strong>, identificable por el ícono de chip (circuito integrado) a la izquierda del nombre. En este caso la capa se llama <em>Hecho Buffer</em>. Las capas temporales existen solo en memoria: si cierra QGIS sin guardarlas, el resultado se perderá.
+  </p>
+  <p>
+    A continuación se describe cómo exportar esta capa temporal como un shapefile permanente, organizado en una carpeta dedicada.
+  </p>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ Verifique el SRC antes de guardar</div>
+    Al guardar, QGIS permite elegir el sistema de coordenadas del archivo de salida. En este caso mantendremos <strong>EPSG:32718</strong> (WGS 84 / UTM Zone 19S), que corresponde al sistema métrico estándar para Chile centro-sur. Verifique que este SRC esté seleccionado antes de confirmar el guardado.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Identificar la capa temporal "Hecho Buffer" en el Panel de Capas</strong>
+        <p>Ubique la capa <em>Hecho Buffer</em> en el Panel de Capas. Reconocerá que es temporal por el <strong>ícono de chip</strong> (circuito integrado) que aparece a la izquierda de su nombre, en lugar del ícono de archivo habitual.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Abrir el menú de exportación</strong>
+        <p>Haga <strong>clic derecho</strong> sobre la capa <em>Hecho Buffer</em> y seleccione <span class="step-path">Exportar → Guardar entidades como…</span>. Se abrirá el cuadro de diálogo de exportación.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Seleccionar el formato de salida</strong>
+        <p>En el campo <em>Formato</em>, seleccione <strong>ESRI Shapefile</strong>Este formato generará el conjunto de archivos <code>.shp</code>, <code>.shx</code>, <code>.dbf</code> y <code>.prj</code> que conforman el shapefile.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Crear la carpeta de destino y nombrar el archivo</strong>
+        <p>Haga clic en los tres puntos (<strong>…</strong>) junto al campo <em>Nombre de archivo</em>. En el explorador, navegue hasta su carpeta de trabajo y cree una <strong>nueva carpeta llamada <code>Buffer</code></strong>Dentro de ella, asigne el nombre <code>Buffer_RioCautin_200m</code> al archivo de salida.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Verificar y mantener el SRC EPSG:32718</strong>
+        <p>En el campo <em>SRC</em> del cuadro de exportación, compruebe que aparezca <strong>EPSG:32718 — WGS 84 / UTM Zone 19S</strong>. Si muestra otro sistema, haga clic en el selector de SRC (ícono de globo) y busque <code>32718</code> para seleccionarlo manualmente.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Confirmar y guardar</strong>
+        <p>Haga clic en <strong>Aceptar</strong>QGIS exportará el archivo y añadirá automáticamente la nueva capa permanente al Panel de Capas. Puede eliminar la capa temporal <em>Hecho Buffer</em> haciendo clic derecho sobre ella → <em>Eliminar capa…</em>, ya que ahora tiene el archivo guardado en disco.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Organización de carpetas recomendada</div>
+    Mantener una carpeta <code>Buffer/</code> separada facilita la gestión del proyecto cuando se generan múltiples resultados de geoprocesos. Se recomienda seguir esta lógica para los próximos geoprocesos que se irán agregando a la guía:<br><br>
+    <code style="display:block; margin-top:.4rem; line-height:2;">
+    📁 proyecto_qgis/<br>
+    &nbsp;&nbsp;&nbsp;├── 📁 capas/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← shapefiles de entrada<br>
+    &nbsp;&nbsp;&nbsp;├── 📁 Buffer/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← resultados de buffer<br>
+    &nbsp;&nbsp;&nbsp;└── proyecto.qgz&nbsp;&nbsp;← archivo de proyecto QGIS
+    </code>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_guardar_buffer.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.8 — Guardar capa temporal "Hecho Buffer"</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-8c"
+        src="img/G14_opt.gif"
+        alt="Demostración: guardar resultado buffer en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-8c').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-8c" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_guardar_buffer.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.8. Exportación de la capa temporal <em>Hecho Buffer</em> como shapefile permanente en la carpeta <code>Buffer/</code>, manteniendo el SRC EPSG:32718.
+      </div>
+    </div>
+  </div>
+  
+  <!-- ──────────────────────────────────────────────────────
+       GEOPROCESO: CORTE (CLIP)
+       ────────────────────────────────────────────────────── -->
+
+  <h2 class="section-title" id="sec-corte-intro">7.9 Geoproceso: Corte (Clip)</h2>
+  <p>
+    El geoproceso de <strong>Corte</strong> (Clip) recorta una capa de entrada usando los límites de otra capa como "cookie cutter" o molde. El resultado conserva únicamente las entidades o porciones de entidades que quedan <em>dentro</em> del área de corte, manteniendo solo los atributos de la capa recortada.
+  </p>
+  <p>
+    En este ejercicio utilizaremos la cuenca del Río Imperial — delimitada por la DGA — como molde para recortar la capa de comunas, obteniendo así las comunas que se encuentran total o parcialmente dentro de dicha cuenca.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">✂️ Corte vs. Intersección — diferencia clave</div>
+    Ambos geoprocesos recortan geometrías usando una capa de superposición, pero difieren en los atributos del resultado:<br><br>
+    <strong>Corte:</strong> conserva <em>solo</em> los atributos de la capa de entrada (comunas). La capa de corte actúa únicamente como molde geométrico.<br><br>
+    <strong>Intersección</strong> (próxima sección): conserva los atributos de <em>ambas</em> capas en el resultado, lo que permite análisis combinados.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta subsección aprenderá a:</h3>
+    <ul>
+      <li>Cargar la capa <code>Cuencas</code> al proyecto junto con la capa de comunas.</li>
+      <li>Filtrar la cuenca del Río Imperial usando el campo <code>NOM_CUEN</code>.</li>
+      <li>Ejecutar el geoproceso Corte usando la cuenca como capa de superposición.</li>
+      <li>Verificar en la tabla de atributos que solo se conservan los campos de comunas.</li>
+    </ul>
+  </div>
+
+  <!-- 7.10 -->
+  <h2 class="section-title" id="sec-corte-pasos">7.10 Cargar la capa Cuencas y filtrar el Río Imperial</h2>
+  <p>
+    Antes de ejecutar el corte es necesario cargar la capa <code>Cuencas</code> y filtrarla para trabajar únicamente con la cuenca del Río Imperial. El procedimiento de carga es idéntico al descrito en la Sección 1.5.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Cargar la capa <code>Cuencas</code> al proyecto</strong>
+        <p>Abra el Administrador de Fuentes de Datos (<kbd>Ctrl</kbd> + <kbd>L</kbd>), navegue hasta el archivo <code>Cuencas.shp</code> y haga clic en <strong>Añadir</strong>Ubíquela en el Panel de Capas sobre la capa de comunas pero debajo de la red hidrográfica.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Abrir el Constructor de consultas sobre <code>Cuencas</code></strong>
+        <p>Haga <strong>clic derecho</strong> sobre la capa <code>Cuencas</code> en el Panel de Capas y seleccione <strong>Filtrar…</strong>Se abrirá el Constructor de consultas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Escribir la expresión de filtro</strong>
+        <p>En la zona de expresión, ingrese exactamente:</p>
+        <p><code>"NOM_CUEN" = 'Río Imperial'</code></p>
+        <p>Haga clic en <strong>Probar</strong> para verificar que devuelve al menos un resultado, luego en <strong>Aceptar</strong>En el lienzo quedará visible únicamente el polígono de la cuenca del Río Imperial.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background:#0d1f2d; color:#7dd3fc; font-family:'JetBrains Mono','Courier New',monospace; font-size:.88rem; padding:.85rem 1.2rem; border-radius:6px; margin:.8rem 0 1.2rem; border:1px solid #1a3a55; line-height:1.7;">
+    <span style="color:#88ccff;">"NOM_CUEN"</span> = <span style="color:#ffcc88;">'Río Imperial'</span>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Sobre la capa Cuencas DGA</div>
+    La capa de cuencas hidrográficas está delimitada por la <strong>Dirección General de Aguas (DGA)</strong> de Chile, organismo dependiente del Ministerio de Obras Públicas. Estas cuencas corresponden a las unidades hidrológicas oficiales del país y están disponibles a través del <a href="https://www.ide.cl" style="color:var(--uct-green);">IDE Chile</a>.
+  </div>
+
+  <!-- GIF 7.13 -->
+  <h2 class="section-title" id="sec-demo7d">7.13 Demostración: carga y filtro de la cuenca</h2>
+  <p>
+    La siguiente animación muestra cómo cargar la capa <code>Cuencas</code> al proyecto y aplicar el filtro <code>"NOM_CUEN" = 'Río Imperial'</code> para aislar la cuenca antes del geoproceso de corte.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_filtro_cuenca.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.13 — Carga de Cuencas y filtro Río Imperial</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-9a"
+        src="img/G15_opt.gif"
+        alt="Demostración: carga de Cuencas y filtro Río Imperial"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-9a').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-9a" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_filtro_cuenca.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.13. Carga de la capa <code>Cuencas</code> (DGA) y aplicación del filtro <code>"NOM_CUEN" = 'Río Imperial'</code> en el Constructor de consultas.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.11 -->
+  <h2 class="section-title" id="sec-corte-ejecutar">7.11 Ejecutar el geoproceso Corte</h2>
+  <p>
+    Con la cuenca del Río Imperial filtrada y visible en el lienzo, ejecutaremos ahora el geoproceso <strong>Corte</strong> desde el Panel de herramientas de geoprocesos. La capa de entrada será <code>comunas</code> y la capa de superposición será <code>Cuencas</code> (con el filtro activo).
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Panel de herramientas de geoprocesos</strong>
+        <p>Vaya a <span class="step-path">Procesos → Caja de herramientas</span> o presione <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Buscar y abrir la herramienta Corte</strong>
+        <p>En la barra de búsqueda, escriba <strong>corte</strong> o <strong>clip</strong>Seleccione <strong>Corte</strong> dentro de la categoría <em>Análisis vectorial</em> (QGIS) y haga doble clic para abrirla.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Configurar la capa de entrada</strong>
+        <p>En el campo <em>Capa de entrada</em>, seleccione <strong>comunas</strong>Esta es la capa que será recortada — la que queremos "cortar con el molde".</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Configurar la capa de superposición</strong>
+        <p>En el campo <em>Capa de superposición</em>, seleccione <strong>Cuencas</strong>Como esta capa tiene el filtro activo sobre el Río Imperial, el corte se realizará únicamente dentro de los límites de esa cuenca.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Definir la capa de salida y ejecutar</strong>
+        <p>Puede dejar la salida como <em>capa temporal</em> para explorar el resultado primero. Haga clic en <strong>Ejecutar</strong>La nueva capa aparecerá en el Panel de Capas con el ícono de chip indicando que es temporal.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Revisar la tabla de atributos del resultado</strong>
+        <p>Haga clic derecho sobre la capa resultante → <strong>Abrir tabla de atributos</strong> (<kbd>F6</kbd>). Verifique que los campos corresponden únicamente a los atributos de la capa <code>comunas</code> (como <code>Region</code>, <code>Comuna</code>, <code>Area_ha</code>, <code>Area_km2</code>). <strong>No aparecerá ningún campo de la capa Cuencas</strong> — esta es la diferencia fundamental respecto al geoproceso de intersección.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Guardar el resultado</div>
+    Al igual que con el buffer, el resultado del corte es una capa temporal. Para guardarlo permanentemente, haga clic derecho → <span class="step-path">Exportar → Guardar entidades como…</span>, seleccione formato <strong>ESRI Shapefile</strong>, mantenga el SRC <strong>EPSG:32718</strong> y guárdelo en una carpeta nueva llamada <code>Corte/</code> dentro de su directorio de trabajo.
+  </div>
+
+  <!-- 7.12 -->
+  <h2 class="section-title" id="sec-corte-resultado">7.12 Resultado esperado</h2>
+  <p>Al completar este geoproceso, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Comunas recortadas al límite de la cuenca del Río Imperial</strong>
+        <p>Las comunas que quedan fuera de la cuenca desaparecen del resultado. Las que están parcialmente dentro aparecen recortadas en su borde, siguiendo exactamente el límite de la cuenca.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Tabla de atributos con solo los campos de comunas</strong>
+        <p>Al abrir la tabla del resultado, se observan únicamente los campos originales de la capa <code>comunas</code>. No hay columnas provenientes de la capa <code>Cuencas</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Diferencia clara respecto a la intersección</strong>
+        <p>La ausencia de atributos de la cuenca en la tabla confirma que se ejecutó un <em>Corte</em> y no una <em>Intersección</em>. En la siguiente sección se verá cómo la intersección sí incorpora atributos de ambas capas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIF 7.14 -->
+  <h2 class="section-title" id="sec-demo7e">7.14 Demostración: corte de comunas con cuenca</h2>
+  <p>
+    La siguiente animación muestra la ejecución del geoproceso Corte sobre la capa de comunas usando la cuenca del Río Imperial como molde, y la revisión de la tabla de atributos del resultado para verificar que solo se conservaron los campos de comunas.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_corte_cuenca.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.14 — Corte de comunas con cuenca Río Imperial</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-9b"
+        src="img/G16_opt.gif"
+        alt="Demostración: corte de comunas con cuenca Río Imperial"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-9b').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-9b" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_corte_cuenca.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.14. Ejecución del geoproceso Corte: la capa <code>comunas</code> es recortada por la cuenca del Río Imperial. La tabla de atributos del resultado conserva solo los campos de comunas.
+      </div>
+    </div>
+  </div>
+  <!-- ──────────────────────────────────────────────────────
+       GEOPROCESO: INTERSECCIÓN
+       ────────────────────────────────────────────────────── -->
+
+  <h2 class="section-title" id="sec-intersect-intro">7.15 Geoproceso: Intersección</h2>
+  <p>
+    La <strong>Intersección</strong> es un geoproceso de superposición que, al igual que el Corte, recorta las entidades de una capa de entrada usando los límites de otra. Sin embargo, su diferencia fundamental radica en los <strong>atributos del resultado</strong>: la intersección combina en una sola tabla los campos de <em>ambas</em> capas, lo que permite análisis espaciales más ricos que relacionen características de las dos fuentes de datos simultáneamente.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🔀 Corte vs. Intersección — resumen comparativo</div>
+    <table style="width:100%; border-collapse:collapse; font-family:var(--sans); font-size:.85rem; margin-top:.4rem;">
+      <thead>
+        <tr>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Característica</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Corte</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Intersección</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Geometría resultante</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Recortada por la capa de superposición</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Recortada por la capa de superposición</td>
+        </tr>
+        <tr style="background:var(--uct-green-light);">
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Atributos conservados</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Solo los de la capa de entrada</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);"><strong>Los de ambas capas</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Uso típico</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Recortar por área de estudio</td>
+          <td style="padding:.38rem .7rem; border-bottom:1px solid var(--border);">Combinar información de dos capas</td>
+        </tr>
+        <tr style="background:var(--uct-green-light);">
+          <td style="padding:.38rem .7rem;">Ejemplo de resultado</td>
+          <td style="padding:.38rem .7rem;">Comunas dentro de la cuenca</td>
+          <td style="padding:.38rem .7rem;">Comunas dentro de la cuenca <strong>+ nombre de la cuenca</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta subsección aprenderá a:</h3>
+    <ul>
+      <li>Ejecutar el geoproceso Intersección entre las capas <code>comunas</code> y <code>Cuencas</code>.</li>
+      <li>Comparar la tabla de atributos del resultado con la del Corte anterior.</li>
+      <li>Identificar los campos combinados de ambas capas en el resultado.</li>
+    </ul>
+  </div>
+
+  <!-- 7.16 -->
+  <h2 class="section-title" id="sec-intersect-pasos">7.16 Ejecutar el geoproceso Intersección</h2>
+  <p>
+    Las capas <code>comunas</code> y <code>Cuencas</code> ya están cargadas en el proyecto desde el ejercicio anterior. En este caso trabajaremos con la capa <code>Cuencas</code> <strong>sin filtro activo</strong>, de modo que el resultado mostrará cada porción de comuna asociada a la cuenca que la contiene, con los atributos de ambas capas combinados.
+  </p>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ ¿Desactivar el filtro de Cuencas?</div>
+    Si la capa <code>Cuencas</code> aún tiene activo el filtro del Río Imperial de la subsección anterior, puede desactivarlo abriendo el Constructor de consultas (<strong>clic derecho → Filtrar…</strong>), borrando la expresión y haciendo clic en <strong>Aceptar</strong>Así la intersección se ejecutará sobre todas las cuencas disponibles, produciendo un resultado más ilustrativo para comparar con el corte.
+  </div>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Panel de herramientas de geoprocesos</strong>
+        <p>Vaya a <span class="step-path">Procesos → Caja de herramientas</span> o presione <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Buscar y abrir la herramienta Intersección</strong>
+        <p>En la barra de búsqueda, escriba <strong>intersección</strong> o <strong>intersection</strong>Seleccione <strong>Intersección</strong> dentro de la categoría <em>Análisis vectorial</em> (QGIS) y haga doble clic para abrirla.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Configurar la capa de entrada</strong>
+        <p>En el campo <em>Capa de entrada</em>, seleccione <strong>comunas</strong>Esta es la capa principal que será fragmentada por los límites de las cuencas.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Configurar la capa de superposición</strong>
+        <p>En el campo <em>Capa de superposición</em>, seleccione <strong>Cuencas</strong>A diferencia del corte, aquí esta capa no solo define el molde geométrico: también <em>aporta sus atributos</em> al resultado.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Ejecutar y explorar el resultado</strong>
+<p>Deje la salida como capa temporal y haga clic en <strong>Ejecutar</strong>Una vez generado el resultado, ábralo en el Panel de Capas y revise su tabla de atributos (<kbd>F6</kbd>). Desplácese hacia la derecha en la tabla para ver los dos campos adicionales incorporados desde la capa <code>Cuencas</code>:</p>
+            <p>— <code>COD_CUEN</code>: código numérico identificador de la cuenca (DGA).<br>
+            — <code>NOM_CUEN</code>: nombre oficial de la cuenca, por ejemplo <em>'Río Imperial'</em>.</p>
+            <p>Estos dos campos se agregan a continuación de todos los campos originales de <code>comunas</code>, de modo que cada fila del resultado contiene simultáneamente la información de la comuna y la de la cuenca que la contiene.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 ¿Qué permite hacer la intersección que el corte no?</div>
+    Con los atributos combinados en la tabla, es posible por ejemplo calcular el área de cada porción de comuna <em>por cuenca</em>, agrupar comunas según la cuenca a la que pertenecen, o generar estadísticas comparativas entre cuencas. El corte no permite este tipo de análisis porque elimina la información de la capa de superposición.
+  </div>
+
+  <!-- 7.17 -->
+  <h2 class="section-title" id="sec-intersect-resultado">7.17 Resultado esperado</h2>
+  <p>Al completar este geoproceso, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Comunas fragmentadas por los límites de las cuencas</strong>
+        <p>Las comunas que atraviesan más de una cuenca aparecen divididas en porciones, cada una correspondiente al área de intersección con cada cuenca. Una misma comuna puede generar múltiples filas en la tabla si cruza varias cuencas.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+		  <strong>Tabla de atributos con campos de ambas capas</strong>
+		  <p>La tabla del resultado contiene todos los campos originales de <code>comunas</code> (<code>Region</code>, <code>Comuna</code>, <code>Area_ha</code>, <code>Area_km2</code>, etc.) más los dos campos incorporados desde <code>Cuencas</code>:</p>
+      <p>— <code>COD_CUEN</code>: código identificador de la cuenca según la codificación DGA.<br>
+      — <code>NOM_CUEN</code>: nombre de la cuenca a la que pertenece cada porción de comuna.</p>
+      <p>Esta incorporación de atributos es precisamente lo que diferencia a la Intersección del Corte: el resultado no solo delimita geométricamente las comunas dentro de cada cuenca, sino que también registra <em>a qué cuenca pertenece</em> cada porción resultante.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Más filas que en la capa original de comunas</strong>
+        <p>Si una comuna queda dividida entre dos o más cuencas, el resultado tendrá <em>más filas</em> que la capa original de comunas. Cada porción es una entidad independiente con sus propios atributos combinados.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.18 -->
+  <h2 class="section-title" id="sec-demo7f">7.18 Demostración: intersección de comunas y cuencas</h2>
+  <p>
+    La siguiente animación muestra la ejecución del geoproceso Intersección entre las capas <code>comunas</code> y <code>Cuencas</code>, y la revisión de la tabla de atributos para comparar los campos resultantes con los obtenidos en el Corte de la subsección anterior.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_interseccion.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.18 — Intersección de comunas con cuencas</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-9c"
+        src="img/G17_opt.gif"
+        alt="Demostración: intersección comunas y cuencas en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-9c').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-9c" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_interseccion.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+		  Fig. 7.18. Ejecución del geoproceso Intersección entre <code>comunas</code> y <code>Cuencas</code>. La tabla resultante incorpora los campos <code>COD_CUEN</code> y <code>NOM_CUEN</code> de la capa de cuencas a los atributos originales de comunas, a diferencia del Corte que conserva solo los campos de la capa de entrada.
+      </div>
+    </div>
+  </div>
+  <!-- ──────────────────────────────────────────────────────
+       GEOPROCESO: DISOLVER
+       ────────────────────────────────────────────────────── -->
+
+  <h2 class="section-title" id="sec-disolver-intro">7.19 Geoproceso: Disolver</h2>
+  <p>
+    El geoproceso <strong>Disolver</strong> (Dissolve) fusiona las entidades de una capa vectorial que comparten el mismo valor en un campo determinado, generando polígonos únicos para cada grupo. Los límites internos entre entidades del mismo grupo desaparecen, mientras que los límites entre grupos distintos se conservan.
+  </p>
+  <p>
+    En este ejercicio utilizaremos el campo <code>Region</code> de la capa <code>comunas</code> como atributo de agrupación. El resultado será una nueva capa donde cada polígono representa una <strong>región completa</strong>, obtenida al fusionar todas las comunas que comparten el mismo nombre de región. Es decir, la capa de comunas se transforma en una capa de regiones sin necesidad de disponer de un shapefile de regiones original.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🔗 ¿Qué hace exactamente el Disolver?</div>
+    Imagine que las comunas son piezas de un rompecabezas. El Disolver "pega" todas las piezas que pertenecen a la misma región, eliminando las líneas de separación entre ellas y dejando solo el contorno externo de cada región. El resultado tiene tantas filas como valores únicos tenga el campo de agrupación — en este caso, una fila por región.
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta subsección aprenderá a:</h3>
+    <ul>
+      <li>Localizar y ejecutar el geoproceso Disolver desde el Panel de herramientas.</li>
+      <li>Seleccionar el campo <code>Region</code> como atributo de agrupación.</li>
+      <li>Explorar la capa temporal resultante <em>Disuelto</em> y su tabla de atributos.</li>
+      <li>Agregar etiquetas a la capa resultante para mostrar el nombre de cada región.</li>
+    </ul>
+  </div>
+
+  <!-- 7.20 -->
+  <h2 class="section-title" id="sec-disolver-pasos">7.20 Ejecutar el geoproceso Disolver</h2>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Panel de herramientas de geoprocesos</strong>
+        <p>Vaya a <span class="step-path">Procesos → Caja de herramientas</span> o presione <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Buscar y abrir la herramienta Disolver</strong>
+        <p>En la barra de búsqueda, escriba <strong>disolver</strong> o <strong>dissolve</strong>Seleccione <strong>Disolver</strong> dentro de la categoría <em>Análisis vectorial</em> (QGIS) y haga doble clic para abrirla.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Configurar la capa de entrada</strong>
+        <p>En el campo <em>Capa de entrada</em>, seleccione <strong>comunas</strong>Asegúrese de que no tenga ningún filtro activo, de modo que la disolución se aplique sobre todas las comunas disponibles en la capa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Seleccionar el campo de agrupación: <code>Region</code></strong>
+        <p>En el campo <em>Disolver campo(s)</em>, haga clic en el botón de selección y marque el campo <strong>Region</strong>Este campo contiene el nombre de la región a la que pertenece cada comuna y será el criterio de fusión: todas las comunas con el mismo valor en <code>Region</code> se unirán en un único polígono.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Dejar los demás parámetros por defecto y ejecutar</strong>
+        <p>No es necesario modificar ningún otro parámetro. Deje la capa de salida como <em>capa temporal</em> y haga clic en <strong>Ejecutar</strong>El proceso es casi instantáneo. La nueva capa aparecerá en el Panel de Capas con el nombre por defecto <strong>Disuelto</strong> y el ícono de chip indicando que es temporal.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Revisar la tabla de atributos del resultado</strong>
+        <p>Abra la tabla de atributos de la capa <em>Disuelto</em> (<kbd>F6</kbd>). Verá que la tabla tiene <strong>una fila por cada región</strong> — tantas filas como valores únicos tenía el campo <code>Region</code> en la capa original de comunas. El único atributo conservado es <code>Region</code>, ya que los demás campos de comunas no tienen un valor único por región y no pueden agregarse directamente.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout note">
+    <div class="callout-title">ℹ️ Atributos en el resultado disuelto</div>
+    Al disolver por un campo, QGIS conserva en la tabla resultante solo ese campo de agrupación. Los demás atributos de la capa original (como <code>Area_ha</code> o <code>Area_km2</code>) se pierden, porque cada fila del resultado representa múltiples comunas y no existe un valor único que las represente. Si necesita estadísticas por región (suma de áreas, población total, etc.), puede calcularse posteriormente con la herramienta <em>Estadísticas por categorías</em>.
+  </div>
+
+  <!-- 7.21 -->
+  <h2 class="section-title" id="sec-disolver-etiquetas">7.21 Agregar etiquetas a la capa Disuelto</h2>
+  <p>
+    Una vez generada la capa de regiones, es útil agregar etiquetas que muestren el nombre de cada región directamente sobre el mapa. El procedimiento es idéntico al descrito en la Sección 6.3, aplicado ahora sobre la capa <em>Disuelto</em>.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir Propiedades de la capa Disuelto</strong>
+        <p>Haga <strong>doble clic</strong> sobre la capa <em>Disuelto</em> en el Panel de Capas para abrir sus propiedades. En el panel izquierdo, seleccione la pestaña <strong>Etiquetas</strong></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Activar etiquetas sencillas y seleccionar el campo <code>Region</code></strong>
+        <p>En el menú desplegable superior, seleccione <strong>Etiquetas sencillas</strong>En el selector <em>Valor</em>, elija el campo <strong>Region</strong>Cada polígono regional mostrará su nombre en el centro del polígono.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Ajustar el tamaño de fuente y aplicar</strong>
+        <p>Dado que los polígonos regionales son más grandes que los comunales, puede usar un tamaño de fuente mayor — entre <strong>10 y 13 puntos</strong> es adecuado para una vista regional. Haga clic en <strong>Aplicar</strong> y luego en <strong>Aceptar</strong>.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 7.22 -->
+  <h2 class="section-title" id="sec-disolver-resultado">7.22 Resultado esperado</h2>
+  <p>Al completar este geoproceso, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Capa temporal "Disuelto" con un polígono por región</strong>
+        <p>La capa resultante muestra un polígono continuo por cada región, sin divisiones internas entre comunas. Los límites entre regiones se conservan correctamente.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Tabla de atributos con una fila por región</strong>
+        <p>La tabla del resultado tiene tantas filas como regiones distintas existían en el campo <code>Region</code> de la capa original de comunas. Solo se conserva el campo <code>Region</code> como atributo.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Nombres de regiones visibles como etiquetas en el mapa</strong>
+        <p>Cada polígono regional muestra su nombre centrado sobre el área, permitiendo identificar visualmente cada región sin necesidad de abrir la tabla de atributos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.23 -->
+  <h2 class="section-title" id="sec-demo7g">7.23 Demostración: disolver comunas en regiones</h2>
+  <p>
+    La siguiente animación muestra la ejecución completa del geoproceso Disolver sobre la capa <code>comunas</code> usando el campo <code>Region</code> como atributo de agrupación, la exploración de la capa temporal <em>Disuelto</em> y la incorporación de etiquetas con el nombre de cada región.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_disolver.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.23 — Disolver comunas por región y etiquetas</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-10"
+        src="img/G18_opt.gif"
+        alt="Demostración: disolver comunas en regiones con etiquetas en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-10').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-10" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_disolver.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.23. Geoproceso Disolver aplicado sobre la capa <code>comunas</code> agrupando por el campo <code>Region</code>. La capa resultante <em>Disuelto</em> contiene un polígono por región con etiquetas de nombre activadas.
+      </div>
+    </div>
+  </div>
+  
+  <!-- ──────────────────────────────────────────────────────
+       GEOPROCESO: UNIÓN
+       ────────────────────────────────────────────────────── -->
+
+  <h2 class="section-title" id="sec-union-intro">7.24 Geoproceso: Unión</h2>
+  <p>
+    El geoproceso <strong>Unión</strong> (Union) es el más completo de los tres operadores de superposición vistos hasta ahora. A diferencia del Corte y la Intersección — que solo conservan las áreas donde ambas capas se superponen — la Unión conserva <strong>todas las entidades de ambas capas</strong>, tanto las zonas de solapamiento como las que quedan fuera de la superposición. El resultado es una capa que cubre la extensión total combinada de las dos capas de entrada.
+  </p>
+  <p>
+    En este ejercicio realizaremos la Unión entre la capa <code>comunas</code> y la capa <code>Cuencas</code>. El resultado mostrará tres tipos de entidades: áreas que pertenecen solo a comunas, áreas que pertenecen solo a cuencas, y áreas donde ambas capas se superponen — cada una con sus atributos correspondientes.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">🔀 Comparativo de los tres operadores de superposición</div>
+    <table style="width:100%; border-collapse:collapse; font-family:var(--sans); font-size:.84rem; margin-top:.4rem;">
+      <thead>
+        <tr>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Característica</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Corte</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Intersección</th>
+          <th style="background:var(--uct-green); color:#fff; padding:.4rem .7rem; text-align:left;">Unión</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Área resultante</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Solo zona de entrada recortada</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Solo zona de solapamiento</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><strong>Extensión total de ambas capas</strong></td>
+        </tr>
+        <tr style="background:var(--uct-green-light);">
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Atributos conservados</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Solo capa de entrada</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Ambas capas (solo solape)</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><strong>Ambas capas (todo el territorio)</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Entidades fuera del solape</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Eliminadas</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Eliminadas</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><strong>Conservadas con NULL en campos vacíos</strong></td>
+        </tr>
+        <tr style="background:var(--uct-green-light);">
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">Filas en resultado</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">≤ capa de entrada</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);">≤ capa de entrada</td>
+          <td style="padding:.35rem .7rem; border-bottom:1px solid var(--border);"><strong>≥ ambas capas combinadas</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:.35rem .7rem;">Valores NULL en tabla</td>
+          <td style="padding:.35rem .7rem;">No</td>
+          <td style="padding:.35rem .7rem;">No</td>
+          <td style="padding:.35rem .7rem;"><strong>Sí, donde no hay solape</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="objetivos-box">
+    <h3>En esta subsección aprenderá a:</h3>
+    <ul>
+      <li>Ejecutar el geoproceso Unión entre las capas <code>comunas</code> y <code>Cuencas</code>.</li>
+      <li>Explorar la tabla de atributos del resultado e identificar los campos de ambas capas.</li>
+      <li>Reconocer los valores <code>NULL</code> en las entidades que no tienen correspondencia en una de las capas.</li>
+      <li>Comparar el resultado con el obtenido en el Corte y la Intersección.</li>
+    </ul>
+  </div>
+
+  <!-- 7.25 -->
+  <h2 class="section-title" id="sec-union-pasos">7.25 Ejecutar el geoproceso Unión</h2>
+  <p>
+    Las capas <code>comunas</code> y <code>Cuencas</code> ya están cargadas en el proyecto. Asegúrese de que ninguna de las dos tenga filtros activos antes de ejecutar la Unión, para obtener el resultado completo sobre todo el territorio.
+  </p>
+
+  <div class="steps-container">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abrir el Panel de herramientas de geoprocesos</strong>
+        <p>Vaya a <span class="step-path">Procesos → Caja de herramientas</span> o presione <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Buscar y abrir la herramienta Unión</strong>
+        <p>En la barra de búsqueda, escriba <strong>unión</strong> o <strong>union</strong>Seleccione <strong>Unión</strong> dentro de la categoría <em>Análisis vectorial</em> (QGIS) y haga doble clic para abrirla.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Configurar la capa de entrada</strong>
+        <p>En el campo <em>Capa de entrada</em>, seleccione <strong>comunas</strong>Esta es la capa principal; sus entidades aparecerán completas en el resultado, tanto las que solapan con cuencas como las que no.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Configurar la capa de superposición</strong>
+        <p>En el campo <em>Capa de superposición</em>, seleccione <strong>Cuencas</strong>Sus entidades también aparecerán completas en el resultado, incluso en las áreas donde no hay comunas correspondientes.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Ejecutar y explorar el resultado</strong>
+        <p>Deje la salida como capa temporal y haga clic en <strong>Ejecutar</strong>Una vez generada la capa, ábrala y revise su tabla de atributos (<kbd>F6</kbd>). Desplácese hacia la derecha para observar los campos combinados de ambas capas: los de <code>comunas</code> a la izquierda y los de <code>Cuencas</code> (<code>COD_CUEN</code>, <code>NOM_CUEN</code>) a la derecha.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Identificar los valores NULL en la tabla</strong>
+        <p>Desplácese por la tabla y observe que algunas filas tienen valores <code>NULL</code> en los campos de <code>comunas</code> (entidades que pertenecen solo a cuencas sin comuna correspondiente) o en los campos de <code>Cuencas</code> (entidades que pertenecen solo a comunas sin cuenca correspondiente). Esto es exclusivo de la Unión — ni el Corte ni la Intersección generan valores NULL de esta manera.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠️ La Unión puede generar capas muy grandes</div>
+    Dependiendo de la complejidad geométrica de las capas de entrada, el resultado de una Unión puede contener un número de entidades considerablemente mayor que las capas originales. Para capas con miles de polígonos complejos, el proceso puede tardar varios minutos. En este ejercicio las capas son de tamaño manejable, por lo que el proceso es rápido.
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 NULL no es cero</div>
+    Un valor <code>NULL</code> en la tabla significa que <em>no existe información</em> para ese campo en esa entidad — no debe interpretarse como cero. Por ejemplo, una entidad de cuenca sin comuna asociada tendrá <code>NULL</code> en el campo <code>Region</code>, no una cadena vacía ni el valor 0. Esto es importante al realizar cálculos o filtros posteriores sobre la capa resultante.
+  </div>
+
+  <!-- 7.26 -->
+  <h2 class="section-title" id="sec-union-resultado">7.26 Resultado esperado</h2>
+  <p>Al completar este geoproceso, debería observar:</p>
+
+  <div class="steps-container" style="margin-top:.8rem;">
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Cobertura total del territorio de ambas capas</strong>
+        <p>El resultado cubre la extensión geográfica completa de la capa de comunas y de la capa de cuencas combinadas, sin recortar ninguna de las dos. Es visualmente el resultado más extenso de los tres operadores.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Tabla con campos de ambas capas y valores NULL</strong>
+        <p>La tabla contiene los campos de <code>comunas</code> más <code>COD_CUEN</code> y <code>NOM_CUEN</code> de la capa <code>Cuencas</code>. Las entidades que no tienen correspondencia en una de las capas muestran <code>NULL</code> en los campos de la capa ausente.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:var(--uct-accent);">✓</div>
+      <div class="step-body">
+        <strong>Mayor número de filas que en Corte e Intersección</strong>
+        <p>Al conservar todas las entidades de ambas capas — tanto las que solapan como las que no — el resultado de la Unión tiene más filas que los resultados del Corte o la Intersección realizados previamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7.27 -->
+  <h2 class="section-title" id="sec-demo7h">7.27 Demostración: unión de comunas y cuencas</h2>
+  <p>
+    La siguiente animación muestra la ejecución del geoproceso Unión entre las capas <code>comunas</code> y <code>Cuencas</code>, y la revisión de la tabla de atributos para identificar los campos combinados de ambas capas y los valores <code>NULL</code> en las entidades sin correspondencia.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════
+       INSTRUCCIÓN PARA EL DOCENTE:
+       Coloque el GIF en la carpeta img/ y actualice el nombre:
+         src="img/demo_union.gif"
+       ══════════════════════════════════════════════════════ -->
+  <div class="gif-panel">
+    <div class="gif-header">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Animación 7.27 — Unión de comunas y cuencas</span>
+    </div>
+    <div class="gif-body">
+      <img
+        id="gif-preview-11"
+        src="img/G19_opt.gif"
+        alt="Demostración: unión de comunas y cuencas en QGIS"
+        onerror="this.style.display='none'; document.getElementById('gif-placeholder-11').style.display='flex';"
+        style="width:100%; border-radius:6px; border:1px solid var(--border); display:block;">
+      <div id="gif-placeholder-11" style="display:none; flex-direction:column; align-items:center; justify-content:center; gap:.7rem; min-height:180px; width:100%; border:2px dashed var(--uct-green-soft); border-radius:8px; background:var(--uct-green-light); padding:1.5rem; text-align:center;">
+        <div style="font-size:2rem; opacity:.5;">🎬</div>
+        <p style="font-family:var(--sans); font-size:.88rem; color:var(--uct-green); font-weight:500; margin:0;">GIF no encontrado</p>
+        <p style="font-family:var(--mono); font-size:.78rem; color:var(--text-muted); margin:0;">Edite <code>src="img/demo_union.gif"</code><br>con la ruta correcta de su archivo.</p>
+      </div>
+      <div class="gif-caption">
+        Fig. 7.27. Geoproceso Unión entre <code>comunas</code> y <code>Cuencas</code>. La tabla resultante combina los campos de ambas capas en toda la extensión territorial, con valores <code>NULL</code> donde no existe correspondencia entre las dos fuentes.
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- REFERENCIAS -->
+  <h2 class="section-title" id="sec-referencias">Referencias</h2>
+  <p style="font-family:var(--sans); font-size:.9rem; color:var(--text-muted);">
+    QGIS Development Team. (2024). <em>QGIS Geographic Information System</em>. Open Source Geospatial Foundation. <a href="https://qgis.org" style="color:var(--uct-green);">https://qgis.org</a>
+  </p>
+  <p style="font-family:var(--sans); font-size:.9rem; color:var(--text-muted);">
+    ESRI. (1998). <em>ESRI Shapefile Technical Description</em>. Environmental Systems Research Institute.
+  </p>
+  <p style="font-family:var(--sans); font-size:.9rem; color:var(--text-muted);">
+    IDE Chile. (2024). <em>Infraestructura de Datos Geoespaciales de Chile</em>. Ministerio de Bienes Nacionales. <a href="https://www.ide.cl" style="color:var(--uct-green);">https://www.ide.cl</a>
+  </p>
+
+</main>
+
+<script>
+  // Sidebar active link on scroll
+  const sections = document.querySelectorAll('[id^="sec-"]');
+  const navLinks = document.querySelectorAll('#toc a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const link = document.querySelector(`#toc a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
